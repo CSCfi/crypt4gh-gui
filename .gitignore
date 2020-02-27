@@ -1,0 +1,7 @@
+# pyinstaller files
+__pycache__/
+build/
+dist/
+*.key
+*.pub
+*.spec
