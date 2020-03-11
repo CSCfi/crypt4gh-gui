@@ -42,7 +42,7 @@ class GUI:
         self.their_key_field.grid(column=0, row=3, sticky=tk.W)
         self.their_key_field.config(state='disabled')
 
-        self.file_label = tk.Label(window, text='File to Encrypt')
+        self.file_label = tk.Label(window, text='File to Encrypt/Decrypt')
         self.file_label.grid(column=0, row=4, sticky=tk.W)
         self.file_value = tk.StringVar()
         self.file_field = tk.Entry(window, width=40, textvariable=self.file_value)
