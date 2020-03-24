@@ -149,7 +149,7 @@ class GUI:
                 print('File for decryption must be a file with .c4gh extension')
             else:
                 # Check that all fields are filled before asking for password
-                if self.my_key_value.get() and self.their_key_value.get() and self.file_value.get():
+                if self.my_key_value.get() and self.file_value.get():
                     # All fields are filled, ask for passphrase for private key encryption
                     password = askstring('Private Key Passphrase', 'Private Key Passphrase', show='*')
                     # This if-clause is for preventing error messages
@@ -161,7 +161,12 @@ class GUI:
                         if password is None:
                             return
                     private_key = get_private_key(self.my_key_value.get(), partial(self.mock_callback, password))
-                    their_key = get_public_key(self.their_key_value.get())
+                    their_key = None  # sender public key is optional when decrypting
+                    if self.their_key_value.get():
+                        print('Sender public key has been set, authenticity will be verified')
+                        their_key = get_public_key(self.their_key_value.get())
+                    else:
+                        print('Sender public key has not been set, authenticity will not be verified')
                     print('Decrypting...')
                     encrypted_file = open(self.file_value.get(), 'rb')
                     decrypted_file = open(self.file_value.get()[:-5], 'wb')
@@ -173,7 +178,8 @@ class GUI:
                     print('Decryption has finished')
                     print(f'Decrypted file: {self.file_value.get()[:-5]}')
                 else:
-                    print('All fields must be filled before file encryption can be started')
+                    print('Private key and file to decrypt must be filled before decryption can be started')
+                    print('Public key is optional')
         else:
             print(f'Unknown action: {action}')
 
