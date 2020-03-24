@@ -19,7 +19,7 @@ class GUI:
         """Initialise window."""
         self.window = window
         self.window.resizable(False, False)
-        self.window.title("Crypt4GH Encryption Tool")
+        self.window.title("Crypt4GH")
         sys.stdout.write = self.print_redirect  # print to activity log instead of console
 
         # 1st column FIELDS AND LABELS
