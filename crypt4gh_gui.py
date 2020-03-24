@@ -7,9 +7,29 @@ from tkinter.simpledialog import askstring
 from tkinter.filedialog import askopenfilename
 from tkinter.scrolledtext import ScrolledText
 from functools import partial
+from platform import system
 
 from crypt4gh.keys import c4gh, get_private_key, get_public_key
 from crypt4gh.lib import encrypt, decrypt
+
+OS_CONFIG = {
+    'field_width': 40,
+    'config_button_width': 25,
+    'operation_button_width': 10
+}
+if system() == 'Linux':
+    # use default config
+    pass
+elif system() == 'Darwin':
+    # MacOS, untested, use default config
+    pass
+elif system() == 'Windows':
+    OS_CONFIG['field_width'] = 70
+    OS_CONFIG['config_button_width'] = 30
+    OS_CONFIG['operation_button_width'] = 14
+else:
+    # unknown OS, use default config
+    pass
 
 
 class GUI:
@@ -27,7 +47,7 @@ class GUI:
         self.my_key_label = tk.Label(window, text='My Private Key')
         self.my_key_label.grid(column=0, row=0, sticky=tk.W)
         self.my_key_value = tk.StringVar()
-        self.my_key_field = tk.Entry(window, width=40, textvariable=self.my_key_value)
+        self.my_key_field = tk.Entry(window, width=OS_CONFIG['field_width'], textvariable=self.my_key_value)
         self.my_key_field.grid(column=0, row=1, sticky=tk.W)
         self.my_key_field.config(state='disabled')
         # Auto-load generated private key if such exists: username_crypt4gh.key (can be changed in UI)
@@ -38,14 +58,14 @@ class GUI:
         self.their_key_label = tk.Label(window, text='Their Public Key')
         self.their_key_label.grid(column=0, row=2, sticky=tk.W)
         self.their_key_value = tk.StringVar()
-        self.their_key_field = tk.Entry(window, width=40, textvariable=self.their_key_value)
+        self.their_key_field = tk.Entry(window, width=OS_CONFIG['field_width'], textvariable=self.their_key_value)
         self.their_key_field.grid(column=0, row=3, sticky=tk.W)
         self.their_key_field.config(state='disabled')
 
         self.file_label = tk.Label(window, text='File to Encrypt/Decrypt')
         self.file_label.grid(column=0, row=4, sticky=tk.W)
         self.file_value = tk.StringVar()
-        self.file_field = tk.Entry(window, width=40, textvariable=self.file_value)
+        self.file_field = tk.Entry(window, width=OS_CONFIG['field_width'], textvariable=self.file_value)
         self.file_field.grid(column=0, row=5, sticky=tk.W)
         self.file_field.config(state='disabled')
 
@@ -57,22 +77,22 @@ class GUI:
 
         # 2nd column BUTTONS
 
-        self.generate_keys_button = tk.Button(window, text='Generate Keys', width=25, command=partial(self.password_prompt, 'generate'))
+        self.generate_keys_button = tk.Button(window, text='Generate Keys', width=OS_CONFIG['config_button_width'], command=partial(self.password_prompt, 'generate'))
         self.generate_keys_button.grid(column=1, row=0, sticky=tk.E, columnspan=2)
 
-        self.load_my_key_button = tk.Button(window, text='Load My Private Key', width=25, command=partial(self.open_file, 'private'))
+        self.load_my_key_button = tk.Button(window, text='Load My Private Key', width=OS_CONFIG['config_button_width'], command=partial(self.open_file, 'private'))
         self.load_my_key_button.grid(column=1, row=1, sticky=tk.E, columnspan=2)
 
-        self.load_their_key_button = tk.Button(window, text='Load Their Public Key', width=25, command=partial(self.open_file, 'public'))
+        self.load_their_key_button = tk.Button(window, text='Load Their Public Key', width=OS_CONFIG['config_button_width'], command=partial(self.open_file, 'public'))
         self.load_their_key_button.grid(column=1, row=2, sticky=tk.E, columnspan=2)
 
-        self.select_file_button = tk.Button(window, text='Select File', width=25, command=partial(self.open_file, 'file'))
+        self.select_file_button = tk.Button(window, text='Select File', width=OS_CONFIG['config_button_width'], command=partial(self.open_file, 'file'))
         self.select_file_button.grid(column=1, row=3, sticky=tk.E, columnspan=2)
 
-        self.encrypt_button = tk.Button(window, text='Encrypt File', width=10, height=3, command=partial(self.password_prompt, 'encrypt'))
+        self.encrypt_button = tk.Button(window, text='Encrypt File', width=OS_CONFIG['operation_button_width'], height=3, command=partial(self.password_prompt, 'encrypt'))
         self.encrypt_button.grid(column=1, row=4, sticky=tk.E, rowspan=3)
 
-        self.decrypt_button = tk.Button(window, text='Decrypt File', width=10, height=3, command=partial(self.password_prompt, 'decrypt'))
+        self.decrypt_button = tk.Button(window, text='Decrypt File', width=OS_CONFIG['operation_button_width'], height=3, command=partial(self.password_prompt, 'decrypt'))
         self.decrypt_button.grid(column=2, row=4, sticky=tk.E, rowspan=3)
 
     def print_redirect(self, message):
