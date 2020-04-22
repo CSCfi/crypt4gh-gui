@@ -149,18 +149,23 @@ class GUI:
                     # This if-clause is for preventing error messages
                     if password is None:
                         return
-                private_key = get_private_key(self.my_key_value.get(), partial(self.mock_callback, password))
-                their_key = get_public_key(self.their_key_value.get())
-                print('Encrypting...')
-                original_file = open(self.file_value.get(), 'rb')
-                encrypted_file = open(f'{self.file_value.get()}.c4gh', 'wb')
-                encrypt([(0, private_key, their_key)],
-                        original_file,
-                        encrypted_file)
-                original_file.close()
-                encrypted_file.close()
-                print('Encryption has finished')
-                print(f'Encrypted file: {self.file_value.get()}.c4gh')
+                private_key = None
+                try:
+                    private_key = get_private_key(self.my_key_value.get(), partial(self.mock_callback, password))
+                except Exception as e:
+                    print('Incorrect private key passphrase')
+                if private_key:
+                    their_key = get_public_key(self.their_key_value.get())
+                    print('Encrypting...')
+                    original_file = open(self.file_value.get(), 'rb')
+                    encrypted_file = open(f'{self.file_value.get()}.c4gh', 'wb')
+                    encrypt([(0, private_key, their_key)],
+                            original_file,
+                            encrypted_file)
+                    original_file.close()
+                    encrypted_file.close()
+                    print('Encryption has finished')
+                    print(f'Encrypted file: {self.file_value.get()}.c4gh')
             else:
                 print('All fields must be filled before file encryption can be started')
         elif action == 'decrypt':
@@ -180,23 +185,39 @@ class GUI:
                         # This if-clause is for preventing error messages
                         if password is None:
                             return
-                    private_key = get_private_key(self.my_key_value.get(), partial(self.mock_callback, password))
-                    their_key = None  # sender public key is optional when decrypting
-                    if self.their_key_value.get():
-                        print('Sender public key has been set, authenticity will be verified')
-                        their_key = get_public_key(self.their_key_value.get())
-                    else:
-                        print('Sender public key has not been set, authenticity will not be verified')
-                    print('Decrypting...')
-                    encrypted_file = open(self.file_value.get(), 'rb')
-                    decrypted_file = open(self.file_value.get()[:-5], 'wb')
-                    decrypt([(0, private_key, their_key)],
-                            encrypted_file,
-                            decrypted_file)
-                    encrypted_file.close()
-                    decrypted_file.close()
-                    print('Decryption has finished')
-                    print(f'Decrypted file: {self.file_value.get()[:-5]}')
+                    private_key = None
+                    try:
+                        private_key = get_private_key(self.my_key_value.get(), partial(self.mock_callback, password))
+                    except Exception as e:
+                        print('Incorrect private key passphrase')
+                    if private_key:
+                        their_key = None  # sender public key is optional when decrypting
+                        if self.their_key_value.get():
+                            print('Sender public key has been set, authenticity will be verified')
+                            their_key = get_public_key(self.their_key_value.get())
+                        else:
+                            print('Sender public key has not been set, authenticity will not be verified')
+                        print('Decrypting...')
+                        encrypted_file = open(self.file_value.get(), 'rb')
+                        decrypted_file = open(self.file_value.get()[:-5], 'wb')
+                        error = False
+                        try:
+                            decrypt([(0, private_key, their_key)],
+                                    encrypted_file,
+                                    decrypted_file,
+                                    sender_pubkey=their_key)
+                        except ValueError as e:
+                            error = True
+                            print('Decryption failed')
+                            if self.their_key_value.get():
+                                print('This public key is not the sender of this file')
+                            else:
+                                print('This private key is not the intended recipient')
+                        encrypted_file.close()
+                        decrypted_file.close()
+                        if not error:
+                            print('Decryption has finished')
+                            print(f'Decrypted file: {self.file_value.get()[:-5]}')
                 else:
                     print('Private key and file to decrypt must be filled before decryption can be started')
                     print('Public key is optional')
