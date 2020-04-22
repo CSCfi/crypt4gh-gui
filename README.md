@@ -11,6 +11,9 @@ Current features:
 - Generation of key pair
 - Encryption of file
 - Decryption of file
+- Sender signature validation (optional)
+
+For more advanced features, please refer to the [CLI](https://github.com/EGA-archive/crypt4gh#usage) instead.
 
 ## Installation
 
