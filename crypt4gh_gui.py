@@ -40,6 +40,12 @@ class GUI:
         self.window = window
         self.window.resizable(False, False)
         self.window.title("Crypt4GH")
+        logo_file = "GA-logo.ico"
+        if not hasattr(sys, "frozen"):
+            logo_file = os.path.join(os.path.dirname(__file__), logo_file)
+        else:
+            logo_file = os.path.join(sys.prefix, logo_file)
+        self.window.iconbitmap(default=logo_file)
         sys.stdout.write = self.print_redirect  # print to activity log instead of console
 
         # 1st column FIELDS AND LABELS

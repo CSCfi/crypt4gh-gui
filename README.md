@@ -56,3 +56,11 @@ To run the executable on Windows:
 ```
 crypt4gh_gui.exe
 ```
+
+### Build with GA4GH Icon
+
+Only tested to be working on Windows. Fails on Linux.
+
+```
+pyinstaller crypt4gh_gui.spec
+```

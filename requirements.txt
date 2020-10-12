@@ -1,1 +1,1 @@
-crypt4gh
+crypt4gh==1.1
