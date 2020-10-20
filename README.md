@@ -1,19 +1,19 @@
-# GUI for Crypt4GH
+# SDS Uploader
 
-This is a simple Graphical User Interface wrapped around the [crypt4gh python module](https://github.com/EGA-archive/crypt4gh).
+This is a simple Graphical User Interface wrapped around the [crypt4gh python module](https://github.com/EGA-archive/crypt4gh). SDS Uploader is a modified Crypt4GH GUI with SFTP uploading feature.
 
 ## Demo
-[![Demo Video](https://kannu.csc.fi/apps/files_sharing/publicpreview/4fx4MiMjpRdXc2x?x=1914&y=531&a=true&file=crypt4gh-gui-video-thumbnail.jpg)](https://kannu.csc.fi/s/kYYW64PPaeccEnY)
+[![Demo Video](https://kannu.csc.fi/s/KP5paigcXnRo8fo/preview)](https://kannu.csc.fi/s/LiKpZ9zWznokjKn)
 
 Click on the picture above to view the demo video
 
 Current features:
 - Generation of key pair
-- Encryption of file
-- Decryption of file
-- Sender signature validation (optional)
-
-For more advanced features, please refer to the [CLI](https://github.com/EGA-archive/crypt4gh#usage) instead.
+- Encryption of file(s)
+- Direct uploading of encrypted file(s)
+- Upload single files or whole directories
+- Filled fields will be saved for later re-use
+- Option to save password for session if encrypting and uploading multiple objects
 
 ## Installation
 
@@ -21,14 +21,12 @@ The GUI requires:
 - Python 3.6+
 - Tkinter
 
-The GUI has only one dependency:
-- [crypt4gh](https://github.com/EGA-archive/crypt4gh)
-
 ```
 git clone https://github.com/CSCfi/crypt4gh-gui
-pip install -r requirements.txt
+cd crypt4gh-gui
+pip install .
 
-python crypt4gh_gui.py
+sds_uploader
 ```
 
 ## Build Standalone Executable
@@ -41,7 +39,7 @@ The GUI can be built into a standalone executable and distributed to machines th
 ```
 pip install pyinstaller
 
-pyinstaller --onefile crypt4gh_gui.py
+pyinstaller --onefile crypt4gh_gui/crypt4gh_gui.py
 ```
 
 This has been tested on Linux and Windows.
