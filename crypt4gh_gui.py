@@ -2,6 +2,7 @@
 
 import os
 import sys
+import json
 import getpass
 import tkinter as tk
 import paramiko
@@ -17,19 +18,17 @@ from crypt4gh.lib import encrypt
 
 OS_CONFIG = {
     'field_width': 40,
-    'config_button_width': 25,
-    # 'operation_button_width': 10
+    'config_button_width': 25
 }
 if system() == 'Linux':
     # use default config
     pass
 elif system() == 'Darwin':
-    # MacOS, untested, use default config
+    # use default config
     pass
 elif system() == 'Windows':
     OS_CONFIG['field_width'] = 70
     OS_CONFIG['config_button_width'] = 30
-    # OS_CONFIG['operation_button_width'] = 14
 else:
     # unknown OS, use default config
     pass
@@ -44,6 +43,10 @@ class GUI:
         self.window.resizable(False, False)
         self.window.title("CSC Sensitive Data Submission Tool")
         sys.stdout.write = self.print_redirect  # print to activity log instead of console
+    
+        # Load previous values from config file
+        self.config_file = os.path.join(os.path.expanduser('~'), '.crypt4gh_config.json')
+        data = self.read_config(self.config_file)
 
         # 1st column FIELDS AND LABELS
 
@@ -53,10 +56,8 @@ class GUI:
         self.my_key_field = tk.Entry(window, width=OS_CONFIG['field_width'], textvariable=self.my_key_value)
         self.my_key_field.grid(column=0, row=1, sticky=tk.W)
         self.my_key_field.config(state='disabled')
-        # Auto-load generated private key if such exists: username_crypt4gh.key (can be changed in UI)
-        default_private_key_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), f'{getpass.getuser()}_crypt4gh.key')
-        if os.path.isfile(default_private_key_path):
-            self.my_key_value.set(default_private_key_path)
+        if data.get('private_key_file') is not None and os.path.isfile(data.get('private_key_file')):
+            self.my_key_value.set(data.get('private_key_file'))
 
         self.their_key_label = tk.Label(window, text='Recipient Public Key')
         self.their_key_label.grid(column=0, row=2, sticky=tk.W)
@@ -64,6 +65,8 @@ class GUI:
         self.their_key_field = tk.Entry(window, width=OS_CONFIG['field_width'], textvariable=self.their_key_value)
         self.their_key_field.grid(column=0, row=3, sticky=tk.W)
         self.their_key_field.config(state='disabled')
+        if data.get('public_key_file') is not None and os.path.isfile(data.get('public_key_file')):
+            self.their_key_value.set(data.get('public_key_file'))
 
         self.file_label = tk.Label(window, text='File or Directory to Upload')
         self.file_label.grid(column=0, row=4, sticky=tk.W)
@@ -79,6 +82,8 @@ class GUI:
         self.sftp_value.set(placeholder_sftp_value)
         self.sftp_field = tk.Entry(window, width=OS_CONFIG['field_width'], textvariable=self.sftp_value)
         self.sftp_field.grid(column=0, row=7, sticky=tk.W)
+        if data.get('sftp_credentials') is not None and len(data.get('sftp_credentials')) > 0:
+            self.sftp_value.set(data.get('sftp_credentials'))
 
         self.sftp_key_label = tk.Label(window, text='SFTP RSA Key')
         self.sftp_key_label.grid(column=0, row=8, sticky=tk.W)
@@ -86,6 +91,8 @@ class GUI:
         self.sftp_key_field = tk.Entry(window, width=OS_CONFIG['field_width'], textvariable=self.sftp_key_value)
         self.sftp_key_field.grid(column=0, row=9, sticky=tk.W)
         self.sftp_key_field.config(state='disabled')
+        if data.get('sftp_key_file') is not None and os.path.isfile(data.get('sftp_key_file')):
+            self.sftp_key_value.set(data.get('sftp_key_file'))
 
         self.activity_label = tk.Label(window, text='Activity Log')
         self.activity_label.grid(column=0, row=10, sticky=tk.W)
@@ -113,11 +120,13 @@ class GUI:
         self.load_sftp_key_button = tk.Button(window, text='Load SFTP RSA Key', width=OS_CONFIG['config_button_width'], command=partial(self.open_file, 'sftp_key'))
         self.load_sftp_key_button.grid(column=1, row=5, sticky=tk.E, columnspan=2)
 
-        # self.decrypt_button = tk.Button(window, text='Decrypt File', width=OS_CONFIG['config_button_width'], command=partial(self.password_prompt, 'decrypt'))
-        # self.decrypt_button.grid(column=1, row=5, sticky=tk.E, columnspan=2)
-
         self.encrypt_button = tk.Button(window, text='Encrypt and Upload File(s)', width=OS_CONFIG['config_button_width'], height=3, command=partial(self.password_prompt, 'encrypt'))
         self.encrypt_button.grid(column=1, row=7, sticky=tk.E, columnspan=2, rowspan=3)
+
+        self.remember_pass = tk.IntVar()
+        self.passwords = {'private_key': '', 'sftp_key': ''}
+        self.remember_password = tk.Checkbutton(window, text="Save password for this session", variable=self.remember_pass, onvalue=1, offvalue=0)
+        self.remember_password.grid(column=1, row=10, sticky=tk.E)
 
     def print_redirect(self, message):
         """Print to activity log widget instead of console."""
@@ -178,9 +187,11 @@ class GUI:
             # Check that all fields are filled before asking for password
             if self.my_key_value.get() and self.their_key_value.get() and self.file_value.get() and self.sftp_value.get() and self.sftp_key_value.get():
                 # Ask for passphrase for private key encryption
-                password = ''
+                password = self.passwords['private_key']
                 while len(password) == 0:
                     password = askstring('Private Key Passphrase', 'Passphrase for PRIVATE KEY', show='*')
+                    if self.remember_pass.get():
+                        self.passwords['private_key'] = password
                     # This if-clause is for preventing error messages
                     if password is None:
                         return
@@ -188,12 +199,15 @@ class GUI:
                 try:
                     private_key = get_private_key(self.my_key_value.get(), partial(self.mock_callback, password))
                 except Exception:
+                    self.passwords['private_key'] = ''
                     print('Incorrect private key passphrase')
                     return
                 # Ask for RSA key password
-                sftp_password = ''
+                sftp_password = self.passwords['sftp_key']
                 while len(sftp_password) == 0:
                     sftp_password = askstring('SFTP RSA Passphrase', 'Passphrase for SFTP RSA KEY', show='*')
+                    if self.remember_pass.get():
+                        self.passwords['sftp_key'] = sftp_password
                     # This if-clause is for preventing error messages
                     if sftp_password is None:
                         return
@@ -212,65 +226,31 @@ class GUI:
                     print('Could not form SFTP connection.')
             else:
                 print('All fields must be filled before file upload can be started')
-        # elif action == 'decrypt':
-        #     print(self.file_value.get())
-        #     if not self.file_value.get().endswith('.c4gh'):
-        #         print('File for decryption must be a file with .c4gh extension')
-        #     else:
-        #         # Check that all fields are filled before asking for password
-        #         if self.my_key_value.get() and self.file_value.get():
-        #             # All fields are filled, ask for passphrase for private key encryption
-        #             password = askstring('Private Key Passphrase', 'Private Key Passphrase', show='*')
-        #             # This if-clause is for preventing error messages
-        #             if password is None:
-        #                 return
-        #             while len(password) == 0:
-        #                 password = askstring('Private Key Passphrase', 'Passphrase can\'t be empty', show='*')
-        #                 # This if-clause is for preventing error messages
-        #                 if password is None:
-        #                     return
-        #             private_key = None
-        #             try:
-        #                 private_key = get_private_key(self.my_key_value.get(), partial(self.mock_callback, password))
-        #             except Exception as e:
-        #                 print('Incorrect private key passphrase')
-        #             if private_key:
-        #                 their_key = None  # sender public key is optional when decrypting
-        #                 if self.their_key_value.get():
-        #                     print('Sender public key has been set, authenticity will be verified')
-        #                     their_key = get_public_key(self.their_key_value.get())
-        #                 else:
-        #                     print('Sender public key has not been set, authenticity will not be verified')
-        #                 print('Decrypting...')
-        #                 encrypted_file = open(self.file_value.get(), 'rb')
-        #                 decrypted_file = open(self.file_value.get()[:-5], 'wb')
-        #                 error = False
-        #                 try:
-        #                     decrypt([(0, private_key, their_key)],
-        #                             encrypted_file,
-        #                             decrypted_file,
-        #                             sender_pubkey=their_key)
-        #                 except ValueError as e:
-        #                     error = True
-        #                     print('Decryption failed')
-        #                     if self.their_key_value.get():
-        #                         print('This public key is not the sender of this file')
-        #                     else:
-        #                         print('This private key is not the intended recipient')
-        #                 encrypted_file.close()
-        #                 decrypted_file.close()
-        #                 if not error:
-        #                     print('Decryption has finished')
-        #                     print(f'Decrypted file: {self.file_value.get()[:-5]}')
-        #         else:
-        #             print('Private key and file to decrypt must be filled before decryption can be started')
-        #             print('Public key is optional')
         else:
             print(f'Unknown action: {action}')
 
     def mock_callback(self, password):
         """Mock callback to return password."""
         return password
+
+    def write_config(self):
+        """Save field values for re-runs."""
+        data = {
+            'private_key_file': self.my_key_value.get(),
+            'public_key_file': self.their_key_value.get(),
+            'sftp_credentials': self.sftp_value.get(),
+            'sftp_key_file': self.sftp_key_value.get()
+        }
+        with open(self.config_file, 'w') as f:
+            f.write(json.dumps(data))
+
+    def read_config(self, path):
+        """Read field values from previous run if they exist."""
+        data = {}
+        if os.path.isfile(path):
+            with open(path, 'r') as f:
+                data = json.loads(f.read())
+        return data
 
     def test_sftp_connection(self, username=None, hostname=None, port=22, rsa_key=None, key_pass=None):
         """Test SFTP connection before uploading."""
@@ -283,6 +263,7 @@ class GUI:
             client.connect(hostname, allow_agent=False, look_for_keys=False,
                            port=port, timeout=int(os.environ.get('SFTP_TIMEOUT', 5)), username=username, pkey=paramiko_key)
             print('SFTP test connection: OK')
+            self.write_config()
             return True
         except paramiko.BadHostKeyException as e:
             print(f'SFTP error: {e}')
@@ -291,8 +272,7 @@ class GUI:
             print(f'SFTP authentication failed, error: {e}')
             raise Exception('AuthenticationException on ' + hostname)
         except paramiko.SSHException as e:
-            # print(f'Could not connect to {hostname}, error: {e}')
-            print(f'Could not connect to {hostname}, RSA key password is incorrect.')
+            print(f'Could not connect to {hostname}, error: {e}')
             raise Exception('SSHException on ' + hostname)
         except Exception as e:
             print(f'SFTP Error: {e}')
@@ -308,7 +288,6 @@ class GUI:
             print(f'Connecting to {hostname} as {username}.')
             transport = paramiko.Transport((hostname, int(port)))
             transport.connect(username=username, pkey=paramiko_key)
-            # transport.set_keepalive(int(os.environ.get('SFTP_TIMEOUT', 5)))
             sftp = paramiko.SFTPClient.from_transport(transport)
             print('SFTP connected, ready to upload files.')
             return sftp
@@ -319,8 +298,7 @@ class GUI:
             print(f'SFTP authentication failed, error: {e}')
             raise Exception('AuthenticationException on ' + hostname)
         except paramiko.SSHException as e:
-            # print(f'Could not connect to {hostname}, error: {e}')
-            print(f'Could not connect to {hostname}, RSA key password is incorrect.')
+            print(f'Could not connect to {hostname}, error: {e}')
             raise Exception('SSHException on ' + hostname)
         except Exception as e:
             print(f'SFTP Error: {e}')
