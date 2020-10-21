@@ -263,7 +263,7 @@ class GUI:
                 sftp_username = sftp_credentials[0]
                 sftp_hostname = sftp_credentials[1].split(":")[0]
                 sftp_port = sftp_credentials[1].split(":")[1]
-                key_type = self.test_sftp_connection(
+                sftp_key = self.test_sftp_connection(
                     username=sftp_username,
                     hostname=sftp_hostname,
                     port=sftp_port,
@@ -271,14 +271,12 @@ class GUI:
                     key_pass=sftp_password,
                 )
                 # Encrypt and upload
-                if private_key and key_type:
+                if private_key and sftp_key:
                     sftp = self.sftp_client(
                         username=sftp_username,
                         hostname=sftp_hostname,
                         port=sftp_port,
-                        rsa_key=self.sftp_key_value.get(),
-                        key_pass=sftp_password,
-                        key_type=key_type,
+                        paramiko_key=sftp_key,
                     )
                     public_key = get_public_key(self.their_key_value.get())
                     self.sftp_upload(
@@ -337,7 +335,7 @@ class GUI:
             )
             print("SFTP test connection: OK")
             self.write_config()  # save fields
-            return "rsa"
+            return paramiko_key
         except Exception as e:
             print(f"SFTP Error: {e}")
         finally:
@@ -359,24 +357,16 @@ class GUI:
             )
             print("SFTP test connection: OK")
             self.write_config()  # save fields
-            return "ed25519"
+            return paramiko_key
         except Exception as e:
             print(f"SFTP Error: {e}")
         finally:
             client.close()
         return False  # neither key worked
 
-    def sftp_client(self, username=None, hostname=None, port=22, rsa_key=None, key_pass=None, key_type=None):
+    def sftp_client(self, username=None, hostname=None, port=22, paramiko_key=None):
         """SFTP client."""
         try:
-            print("Loading RSA key file.")
-            paramiko_key = None
-            # check for key type, add more cases as needed, currently recognised cases: rsa and ed25519
-            if key_type == "rsa":
-                paramiko_key = paramiko.RSAKey.from_private_key_file(rsa_key, password=key_pass)
-            else:
-                # ed25519
-                paramiko_key = paramiko.ed25519key.Ed25519Key(filename=rsa_key, password=key_pass)
             print(f"Connecting to {hostname} as {username}.")
             transport = paramiko.Transport((hostname, int(port)))
             transport.connect(username=username, pkey=paramiko_key)
