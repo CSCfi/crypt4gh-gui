@@ -360,6 +360,8 @@ class GUI:
             print("SFTP test connection: OK")
             self.write_config()  # save fields
             return "ed25519"
+        except Exception as e:
+            print(f"SFTP Error: {e}")
         finally:
             client.close()
         return False  # neither key worked
