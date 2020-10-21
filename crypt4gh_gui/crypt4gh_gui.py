@@ -82,7 +82,7 @@ class GUI:
         if data.get("sftp_credentials") is not None and len(data.get("sftp_credentials")) > 0:
             self.sftp_value.set(data.get("sftp_credentials"))
 
-        self.sftp_key_label = tk.Label(window, text="SFTP Key")
+        self.sftp_key_label = tk.Label(window, text="SFTP Key (Optional)")
         self.sftp_key_label.grid(column=0, row=8, sticky=tk.W)
         self.sftp_key_value = tk.StringVar()
         self.sftp_key_field = tk.Entry(window, width=OS_CONFIG["field_width"], textvariable=self.sftp_key_value)
@@ -231,7 +231,6 @@ class GUI:
                 and self.their_key_value.get()
                 and self.file_value.get()
                 and self.sftp_value.get()
-                and self.sftp_key_value.get()
             ):
                 # Ask for passphrase for private key encryption
                 password = self.passwords["private_key"]
@@ -252,7 +251,7 @@ class GUI:
                 # Ask for RSA key password
                 sftp_password = self.passwords["sftp_key"]
                 while len(sftp_password) == 0:
-                    sftp_password = askstring("SFTP RSA Passphrase", "Passphrase for SFTP RSA KEY", show="*")
+                    sftp_password = askstring("SFTP Passphrase", "Passphrase for SFTP KEY or USERNAME", show="*")
                     if self.remember_pass.get():
                         self.passwords["sftp_key"] = sftp_password
                     # This if-clause is for preventing error messages
@@ -263,20 +262,20 @@ class GUI:
                 sftp_username = sftp_credentials[0]
                 sftp_hostname = sftp_credentials[1].split(":")[0]
                 sftp_port = sftp_credentials[1].split(":")[1]
-                sftp_key = self.test_sftp_connection(
+                sftp_auth = self.test_sftp_connection(
                     username=sftp_username,
                     hostname=sftp_hostname,
                     port=sftp_port,
                     rsa_key=self.sftp_key_value.get(),
-                    key_pass=sftp_password,
+                    sftp_pass=sftp_password,
                 )
                 # Encrypt and upload
-                if private_key and sftp_key:
+                if private_key and sftp_auth:
                     sftp = self.sftp_client(
                         username=sftp_username,
                         hostname=sftp_hostname,
                         port=sftp_port,
-                        paramiko_key=sftp_key,
+                        sftp_auth=sftp_auth,
                     )
                     public_key = get_public_key(self.their_key_value.get())
                     self.sftp_upload(
@@ -312,7 +311,7 @@ class GUI:
                 data = json.loads(f.read())
         return data
 
-    def test_sftp_connection(self, username=None, hostname=None, port=22, rsa_key=None, key_pass=None):
+    def test_sftp_connection(self, username=None, hostname=None, port=22, rsa_key=None, sftp_pass=None):
         """Test SFTP connection and determine key type before uploading."""
         print("Testing connection to SFTP server.")
         print(
@@ -322,7 +321,7 @@ class GUI:
         try:
             print("Testing if SFTP key is of type RSA")
             client = paramiko.SSHClient()
-            paramiko_key = paramiko.RSAKey.from_private_key_file(rsa_key, password=key_pass)
+            paramiko_key = paramiko.RSAKey.from_private_key_file(rsa_key, password=sftp_pass)
             client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             client.connect(
                 hostname,
@@ -344,7 +343,7 @@ class GUI:
         try:
             print("Testing if SFTP key is of type Ed25519")
             client = paramiko.SSHClient()
-            paramiko_key = paramiko.ed25519key.Ed25519Key(filename=rsa_key, password=key_pass)
+            paramiko_key = paramiko.ed25519key.Ed25519Key(filename=rsa_key, password=sftp_pass)
             client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             client.connect(
                 hostname,
@@ -362,14 +361,40 @@ class GUI:
             print(f"SFTP Error: {e}")
         finally:
             client.close()
-        return False  # neither key worked
+        # Authenticating with password, if key is not set
+        try:
+            print("Testing if SFTP auth scheme is username+password")
+            client = paramiko.SSHClient()
+            client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            client.connect(
+                hostname,
+                allow_agent=False,
+                look_for_keys=False,
+                port=port,
+                timeout=int(os.environ.get("SFTP_TIMEOUT", 5)),
+                username=username,
+                password=sftp_pass,
+            )
+            print("SFTP test connection: OK")
+            self.write_config()  # save fields
+            return sftp_pass
+        except Exception as e:
+            print(f"SFTP Error: {e}")
+        finally:
+            client.close()
+        return False  # neither keys or password worked
 
-    def sftp_client(self, username=None, hostname=None, port=22, paramiko_key=None):
+    def sftp_client(self, username=None, hostname=None, port=22, sftp_auth=None):
         """SFTP client."""
         try:
             print(f"Connecting to {hostname} as {username}.")
             transport = paramiko.Transport((hostname, int(port)))
-            transport.connect(username=username, pkey=paramiko_key)
+            if self.sftp_key_value.get():
+                # If SFTP key is set, authenticate with that
+                transport.connect(username=username, pkey=sftp_auth)
+            else:
+                # If key is not set, authenticate with password
+                transport.connect(username=username, password=sftp_auth)
             sftp = paramiko.SFTPClient.from_transport(transport)
             print("SFTP connected, ready to upload files.")
             return sftp

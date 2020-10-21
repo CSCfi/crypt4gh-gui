@@ -14,7 +14,7 @@ Current features:
 - Upload single files or whole directories
 - Filled fields will be saved for later re-use
 - Option to save password for session if encrypting and uploading multiple objects
-- Supports RSA and Ed25519 keys for SFTP authentication
+- Supports RSA and Ed25519 keys or username+password for SFTP authentication
 
 ## Installation
 
