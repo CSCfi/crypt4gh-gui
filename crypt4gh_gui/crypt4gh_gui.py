@@ -85,7 +85,7 @@ class GUI:
         if data.get('sftp_credentials') is not None and len(data.get('sftp_credentials')) > 0:
             self.sftp_value.set(data.get('sftp_credentials'))
 
-        self.sftp_key_label = tk.Label(window, text='SFTP RSA Key')
+        self.sftp_key_label = tk.Label(window, text='SFTP Key')
         self.sftp_key_label.grid(column=0, row=8, sticky=tk.W)
         self.sftp_key_value = tk.StringVar()
         self.sftp_key_field = tk.Entry(window, width=OS_CONFIG['field_width'], textvariable=self.sftp_key_value)
@@ -117,7 +117,7 @@ class GUI:
         self.select_directory_button = tk.Button(window, text='Select Directory to Upload', width=OS_CONFIG['config_button_width'], command=partial(self.open_file, 'directory'))
         self.select_directory_button.grid(column=1, row=4, sticky=tk.E, columnspan=2)
 
-        self.load_sftp_key_button = tk.Button(window, text='Load SFTP RSA Key', width=OS_CONFIG['config_button_width'], command=partial(self.open_file, 'sftp_key'))
+        self.load_sftp_key_button = tk.Button(window, text='Load SFTP Key', width=OS_CONFIG['config_button_width'], command=partial(self.open_file, 'sftp_key'))
         self.load_sftp_key_button.grid(column=1, row=5, sticky=tk.E, columnspan=2)
 
         self.encrypt_button = tk.Button(window, text='Encrypt and Upload File(s)', width=OS_CONFIG['config_button_width'], height=3, command=partial(self.password_prompt, 'encrypt'))
@@ -216,10 +216,10 @@ class GUI:
                 sftp_username = sftp_credentials[0]
                 sftp_hostname = sftp_credentials[1].split(':')[0]
                 sftp_port = sftp_credentials[1].split(':')[1]
-                test_connection = self.test_sftp_connection(username=sftp_username, hostname=sftp_hostname, port=sftp_port, rsa_key=self.sftp_key_value.get(), key_pass=sftp_password)
+                key_type = self.test_sftp_connection(username=sftp_username, hostname=sftp_hostname, port=sftp_port, rsa_key=self.sftp_key_value.get(), key_pass=sftp_password)
                 # Encrypt and upload
-                if private_key and test_connection:
-                    sftp = self.sftp_client(username=sftp_username, hostname=sftp_hostname, port=sftp_port, rsa_key=self.sftp_key_value.get(), key_pass=sftp_password)
+                if private_key and key_type:
+                    sftp = self.sftp_client(username=sftp_username, hostname=sftp_hostname, port=sftp_port, rsa_key=self.sftp_key_value.get(), key_pass=sftp_password, key_type=key_type)
                     public_key = get_public_key(self.their_key_value.get())
                     self.sftp_upload(sftp=sftp, target=self.file_value.get(), private_key=private_key, public_key=public_key)
                 else:
@@ -253,38 +253,50 @@ class GUI:
         return data
 
     def test_sftp_connection(self, username=None, hostname=None, port=22, rsa_key=None, key_pass=None):
-        """Test SFTP connection before uploading."""
+        """Test SFTP connection and determine key type before uploading."""
         print('Testing connection to SFTP server.')
         print(f'SFTP testing timeout is: {os.environ.get("SFTP_TIMEOUT", 5)}. You can change this with environment variable $SFTP_TIMEOUT')
+        # Test if key is RSA
         try:
+            print('Testing if SFTP key is of type RSA')
             client = paramiko.SSHClient()
             paramiko_key = paramiko.RSAKey.from_private_key_file(rsa_key, password=key_pass)
             client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             client.connect(hostname, allow_agent=False, look_for_keys=False,
                            port=port, timeout=int(os.environ.get('SFTP_TIMEOUT', 5)), username=username, pkey=paramiko_key)
             print('SFTP test connection: OK')
-            self.write_config()
-            return True
-        except paramiko.BadHostKeyException as e:
-            print(f'SFTP error: {e}')
-            raise Exception('BadHostKeyException on ' + hostname)
-        except paramiko.AuthenticationException as e:
-            print(f'SFTP authentication failed, error: {e}')
-            raise Exception('AuthenticationException on ' + hostname)
-        except paramiko.SSHException as e:
-            print(f'Could not connect to {hostname}, error: {e}')
-            raise Exception('SSHException on ' + hostname)
+            self.write_config()  # save fields
+            return 'rsa'
         except Exception as e:
             print(f'SFTP Error: {e}')
         finally:
             client.close()
-        return False
+        # Test if key is ed25519
+        try:
+            print('Testing if SFTP key is of type Ed25519')
+            client = paramiko.SSHClient()
+            paramiko_key = paramiko.ed25519key.Ed25519Key(filename=rsa_key, password=key_pass)
+            client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            client.connect(hostname, allow_agent=False, look_for_keys=False,
+                           port=port, timeout=int(os.environ.get('SFTP_TIMEOUT', 5)), username=username, pkey=paramiko_key)
+            print('SFTP test connection: OK')
+            self.write_config()  # save fields
+            return 'ed25519'
+        finally:
+            client.close()
+        return False  # neither key worked
 
-    def sftp_client(self, username=None, hostname=None, port=22, rsa_key=None, key_pass=None):
+    def sftp_client(self, username=None, hostname=None, port=22, rsa_key=None, key_pass=None, key_type=None):
         """SFTP client."""
         try:
             print('Loading RSA key file.')
-            paramiko_key = paramiko.RSAKey.from_private_key_file(rsa_key, password=key_pass)
+            paramiko_key = None
+            # check for key type, add more cases as needed, currently recognised cases: rsa and ed25519
+            if key_type == 'rsa':
+                paramiko_key = paramiko.RSAKey.from_private_key_file(rsa_key, password=key_pass)
+            else:
+                # ed25519
+                paramiko_key = paramiko.ed25519key.Ed25519Key(filename=rsa_key, password=key_pass)
             print(f'Connecting to {hostname} as {username}.')
             transport = paramiko.Transport((hostname, int(port)))
             transport.connect(username=username, pkey=paramiko_key)
