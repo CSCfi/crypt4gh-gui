@@ -14,8 +14,9 @@ jobs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
       - uses: actions/checkout@v2
-      - name: Set env release tag
-        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - name: Set output tag name
+        id: vars
+        run: echo ::set-output name=tag::${GITHUB_REF#refs/*/}
       - name: Create release
         id: create_release
         uses: actions/create-release@v1
@@ -28,8 +29,8 @@ jobs:
           draft: false
           prerelease: false
           body: |
-            Release $RELEASE_VERSION of crypt4gh graphical
-            user interface.
+            Release ${{ steps.vars.outputs.tag }} of
+            crypt4gh GUI (Graphical User Interface).
 
   build_release:
     name: Upload Release Asset
