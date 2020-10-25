@@ -29,8 +29,7 @@ jobs:
           draft: false
           prerelease: false
           body: |
-            Release ${{ steps.vars.outputs.tag }} of
-            crypt4gh GUI (Graphical User Interface).
+            Release ${{ steps.vars.outputs.tag }} of crypt4gh GUI (Graphical User Interface).
 
   build_release:
     name: Upload Release Asset
