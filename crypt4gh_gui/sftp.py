@@ -112,6 +112,7 @@ def _sftp_upload_directory(sftp=None, directory=None, private_key=None, public_k
                 public_key=public_key,
             )
 
+
 def _sftp_client(username=None, hostname=None, port=22, sftp_auth=None):
     """SFTP client."""
     try:

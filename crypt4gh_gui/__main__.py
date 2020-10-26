@@ -13,9 +13,7 @@ def main():
     print("4. Select a file or a directory for upload (not both)")
     print("5. Write SFTP username, server and port to SFTP Credentials")
     print("6. Load your SFTP RSA key")
-    print(
-        "7. Click [Encrypt and Upload File(s)] to upload selected file or directory"
-    )
+    print("7. Click [Encrypt and Upload File(s)] to upload selected file or directory")
     print("8. Password for private key and RSA key will be prompted\n")
     root.mainloop()
 
