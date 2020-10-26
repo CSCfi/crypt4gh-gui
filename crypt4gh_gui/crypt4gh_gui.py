@@ -263,7 +263,6 @@ class GUI:
                 hostname=sftp_hostname,
                 port=sftp_port,
                 sftp_auth=sftp_auth,
-                sftp_key=self.sftp_key_value.get(),
             )
             public_key = get_public_key(self.their_key_value.get())
             self.sftp_upload(sftp=sftp, target=self.file_value.get(), private_key=private_key, public_key=public_key)
@@ -322,8 +321,9 @@ class GUI:
 
     def test_sftp_connection(self, username=None, hostname=None, port=22, rsa_key=None, sftp_pass=None):
         """Test SFTP connection and determine key type before uploading."""
-        _sftp_connection(username, hostname, port, rsa_key, sftp_pass)
+        sftp_auth = _sftp_connection(username, hostname, port, rsa_key, sftp_pass)
         self.write_config()  # save fields
+        return sftp_auth
 
     def sftp_upload(self, sftp=None, target=None, private_key=None, public_key=None):
         """Upload file or directory."""

@@ -113,12 +113,12 @@ def _sftp_upload_directory(sftp=None, directory=None, private_key=None, public_k
             )
 
 
-def _sftp_client(username=None, hostname=None, port=22, sftp_auth=None, sftp_key=None):
+def _sftp_client(username=None, hostname=None, port=22, sftp_auth=None):
     """SFTP client."""
     try:
         print(f"Connecting to {hostname} as {username}.")
         transport = paramiko.Transport((hostname, int(port)))
-        if sftp_key.get():
+        if type(sftp_auth) in [paramiko.rsakey.RSAKey, paramiko.ed25519key.Ed25519Key]:
             # If SFTP key is set, authenticate with that
             transport.connect(username=username, pkey=sftp_auth)
         else:
