@@ -80,7 +80,7 @@ jobs:
           pip install .
       - name: Build artifact 
         run: |
-          pyinstaller --onefile gui.py --name ${{ matrix.asset_name }}
+          pyinstaller --onefile crypt4gh_gui.py --name ${{ matrix.asset_name }}
       - name: Build Asset
         run: |
           cd ./dist
