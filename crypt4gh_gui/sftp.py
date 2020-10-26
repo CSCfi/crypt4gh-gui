@@ -99,7 +99,7 @@ def _sftp_upload_directory(sftp=None, directory=None, private_key=None, public_k
     for item in os.walk(directory):
         sftp_dir = Path(sftp_dir).joinpath(Path(item[0]).name)
         try:
-            sftp.mkdir(sftp_dir)
+            sftp.mkdir(sftp_dir.name)
             print(f"Directory {sftp_dir} created.")
         except OSError:
             print(f"Skipping directory {sftp_dir} creation, as it already exists.")
