@@ -9,7 +9,7 @@ setup(
     description="FUSE client for accessing the SDA.",
     long_description="",
     packages=["crypt4gh_gui"],
-    entry_points={"console_scripts": ["sds_uploader=crypt4gh_gui.crypt4gh_gui:main"]},
+    entry_points={"console_scripts": ["sds_uploader=crypt4gh_gui.__main__:main"]},
     platforms="any",
     classifiers=[
         "Development Status :: 3 - Alpha",
