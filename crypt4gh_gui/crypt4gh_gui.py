@@ -90,6 +90,9 @@ class GUI:
         self.sftp_key_label = tk.Label(window, text="SFTP Key (Optional)")
         self.sftp_key_label.grid(column=0, row=8, sticky=tk.W)
         self.sftp_key_value = tk.StringVar()
+        self.sftp_key_field = tk.Entry(window, width=OS_CONFIG["field_width"], textvariable=self.sftp_key_value)
+        self.sftp_key_field.grid(column=0, row=9, sticky=tk.W)
+        self.sftp_key_field.config(state="disabled")
         sftp_key_file = data.get("sftp_key_file", None)
         if sftp_key_file and Path(sftp_key_file).is_file():
             self.sftp_key_value.set(sftp_key_file)
