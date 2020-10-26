@@ -99,19 +99,18 @@ def _sftp_upload_directory(sftp=None, directory=None, private_key=None, public_k
     for item in os.walk(directory):
         sftp_dir = Path(sftp_dir).joinpath(Path(item[0]).name)
         try:
-            sftp.mkdir(sftp_dir.name)
+            sftp.mkdir(str(sftp_dir))
             print(f"Directory {sftp_dir} created.")
         except OSError:
             print(f"Skipping directory {sftp_dir} creation, as it already exists.")
         for sub_item in item[2]:
             _sftp_upload_file(
                 sftp=sftp,
-                source=Path(item[0]).joinpath(sub_item),
-                destination=f"/{Path(sftp_dir).joinpath(sub_item)}",
+                source=str(Path(item[0]).joinpath(sub_item)),
+                destination=f"/{str(Path(sftp_dir).joinpath(sub_item))}",
                 private_key=private_key,
                 public_key=public_key,
             )
-
 
 def _sftp_client(username=None, hostname=None, port=22, sftp_auth=None):
     """SFTP client."""
