@@ -119,20 +119,26 @@ class GUI:
 
     def password_prompt(self, action):
         """Ask user for private key password."""
-        password = ''
+        password1 = password2 = ''
         if action == 'generate':
             # Passphrase for private key generation
-            password = askstring('Private Key Passphrase', 'Private Key Passphrase', show='*')
+            password1 = askstring('Private Key Passphrase', 'Private Key Passphrase', show='*')
             # This if-clause is for preventing error messages
-            if password is None:
+            if password1 is None:
                 return
-            while len(password) == 0:
-                password = askstring('Private Key Passphrase', 'Passphrase can\'t be empty', show='*')
+            password2 = askstring('Private Key Passphrase', 'Re-type Private Key Passphrase to Confirm', show='*')
+            if password2 is None:
+                return
+            if password1 != password2:
+                print("Passwords don't match")
+                return
+            while len(password1) == 0:
+                password1 = askstring('Private Key Passphrase', 'Passphrase can\'t be empty', show='*')
                 # This if-clause is for preventing error messages
-                if password is None:
+                if password1 is None:
                     return
             # Use crypt4gh module to generate private and public keys
-            c4gh.generate(f'{getpass.getuser()}_crypt4gh.key', f'{getpass.getuser()}_crypt4gh.pub', callback=partial(self.mock_callback, password))
+            c4gh.generate(f'{getpass.getuser()}_crypt4gh.key', f'{getpass.getuser()}_crypt4gh.pub', callback=partial(self.mock_callback, password1))
             print('Key pair has been generated, your private key will be auto-loaded the next time you launch this tool')
             print(f'Private key: {getpass.getuser()}_crypt4gh.key')
             print(f'Public key: {getpass.getuser()}_crypt4gh.pub')
