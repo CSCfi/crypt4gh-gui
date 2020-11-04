@@ -59,7 +59,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v1
+        uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install Linux dependencies
@@ -78,9 +78,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyinstaller
           pip install .
-      - name: Build artifact 
+      - name: Build GUI artifact Linux
+        if: matrix.os == 'ubuntu-latest'
         run: |
-          pyinstaller --onefile crypt4gh_gui.py --name ${{ matrix.asset_name }}
+          echo '${{ secrets.DOCKER_PASSWORD }}' | docker login -u '${{ secrets.DOCKER_USERNAME }}' --password-stdin
+          docker pull cscfi/pyinstaller
+          docker run --rm -v "${PWD}:/builder" cscfi/pyinstaller --noconsole --onefile crypt4gh_gui.py --name ${{ matrix.asset_name }}
+          sudo chown -R $USER:$GROUP dist/
+      - name: Build artifact 
+        if: matrix.os != 'ubuntu-latest'
+        run: |
+          pyinstaller --noconsole --onefile crypt4gh_gui.py --name ${{ matrix.asset_name }}
       - name: Build Asset
         run: |
           cd ./dist
