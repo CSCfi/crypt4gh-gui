@@ -40,17 +40,17 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
         include:
           - os: ubuntu-latest
-            artifact_name: crypt4gh-sds
+            artifact_name: crypt4sds
             os_suffix: linux-amd64
-            asset_name: crypt4gh-sds
+            asset_name: crypt4sds
           - os: windows-latest
-            artifact_name: crypt4gh-sds.exe
+            artifact_name: crypt4sds.exe
             os_suffix: windows-amd64
-            asset_name: crypt4gh-sds
+            asset_name: crypt4sds
           - os: macos-latest
-            artifact_name: crypt4gh-sds
+            artifact_name: crypt4sds
             os_suffix: macos-amd64
-            asset_name: crypt4gh-sds
+            asset_name: crypt4sds
         python-version: [3.7]
     
     runs-on: ${{ matrix.os }}
@@ -83,12 +83,12 @@ jobs:
         run: |
           echo '${{ secrets.DOCKER_PASSWORD }}' | docker login -u '${{ secrets.DOCKER_USERNAME }}' --password-stdin
           docker pull cscfi/pyinstaller
-          docker run --rm -v "${PWD}:/builder" cscfi/pyinstaller --noconsole --onefile crypt4SDS_gui.py --name ${{ matrix.asset_name }}
+          docker run --rm -v "${PWD}:/builder" cscfi/pyinstaller --noconsole --onefile sdsgui.py --name ${{ matrix.asset_name }}
           sudo chown -R $USER:$GROUP dist/
       - name: Build artifact 
         if: matrix.os != 'ubuntu-latest'
         run: |
-          pyinstaller --noconsole --onefile crypt4SDS_gui.py --name ${{ matrix.asset_name }}
+          pyinstaller --noconsole --onefile sdsgui.py --name ${{ matrix.asset_name }}
       - name: Build Asset
         run: |
           cd ./dist
