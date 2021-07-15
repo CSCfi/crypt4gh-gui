@@ -138,11 +138,11 @@ class GUI:
                 if password1 is None:
                     return
             # Use crypt4gh module to generate private and public keys
-            c4gh.generate(f'{getpass.getuser()}_crypt4gh.key', f'{getpass.getuser()}_crypt4gh.pub', callback=partial(self.mock_callback, password1))
-            print('Key pair has been generated, your private key will be auto-loaded the next time you launch this tool')
-            print(f'Private key: {getpass.getuser()}_crypt4gh.key')
-            print(f'Public key: {getpass.getuser()}_crypt4gh.pub')
-        elif action == 'encrypt':
+            c4gh.generate(f"{getpass.getuser()}_crypt4gh.key", f"{getpass.getuser()}_crypt4gh.pub", passphrase=partial(self.mock_callback, password1))
+            print("Key pair has been generated, your private key will be auto-loaded the next time you launch this tool")
+            print(f"Private key: {getpass.getuser()}_crypt4gh.key")
+            print(f"Public key: {getpass.getuser()}_crypt4gh.pub")
+        elif action == "encrypt":
             # Check that all fields are filled before asking for password
             if self.my_key_value.get() and self.their_key_value.get() and self.file_value.get():
                 # All fields are filled, ask for passphrase for private key encryption
