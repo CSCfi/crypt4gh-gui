@@ -153,8 +153,8 @@ class GUI:
                 print("Key pair has been generated, your private key will be auto-loaded the next time you launch this tool")
                 print(f"Private key: {getpass.getuser()}_crypt4gh.key")
                 print(f"Public key: {getpass.getuser()}_crypt4gh.pub")
-            except PermissionError as e:
-                print(f"File {getpass.getuser()}_crypt4gh.key already exists remove it and try again.")
+            except PermissionError:
+                print(f"A previous generated key exists under the name {getpass.getuser()}_crypt4gh.key already exists remove it and try again.")
         elif action == "encrypt":
             # Check that all fields are filled before asking for password
             if self.my_key_value.get() and self.their_key_value.get() and self.file_value.get():
