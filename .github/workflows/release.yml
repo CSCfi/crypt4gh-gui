@@ -95,3 +95,4 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           files: ./dist/${{ matrix.asset_name }-python${{ matrix.python-version }}-${{ matrix.os_suffix }}.zip
+          fail_on_unmatched_files: true
