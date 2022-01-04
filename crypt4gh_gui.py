@@ -12,6 +12,7 @@ from functools import partial
 from platform import system
 from typing import Any
 
+from nacl.public import PrivateKey
 from crypt4gh.keys import c4gh, get_private_key, get_public_key
 from crypt4gh.lib import encrypt, decrypt
 
@@ -71,7 +72,7 @@ class GUI:
 
         self.activity_label = tk.Label(window, text="Activity Log")
         self.activity_label.grid(column=0, row=6, sticky=tk.W)
-        self.activity_field = ScrolledText(window, height=10)
+        self.activity_field = ScrolledText(window, height=16)
         self.activity_field.grid(column=0, row=7, columnspan=3, sticky=tk.W)
         self.activity_field.config(state="disabled")
 
@@ -156,24 +157,31 @@ class GUI:
             except PermissionError:
                 print(f"A previous generated key exists under the name {getpass.getuser()}_crypt4gh.key already exists remove it and try again.")
         elif action == "encrypt":
-            # Check that all fields are filled before asking for password
-            if self.my_key_value.get() and self.their_key_value.get() and self.file_value.get():
-                # All fields are filled, ask for passphrase for private key encryption
-                password = askstring("Private Key Passphrase", "Private Key Passphrase", show="*")
-                # This if-clause is for preventing error messages
-                if password is None:
-                    return
-                while len(password) == 0:
-                    password = askstring("Private Key Passphrase", "Passphrase can't be empty", show="*")
+            # Check that recipient key and file are set before continuing
+            if self.their_key_value.get() and self.file_value.get():
+                private_key = None
+                # If private key is set, get a password for it
+                if self.my_key_value.get():
+                    # All fields are filled, ask for passphrase for private key encryption
+                    password = askstring("Private Key Passphrase", "Private Key Passphrase", show="*")
                     # This if-clause is for preventing error messages
                     if password is None:
                         return
-                private_key = None
-                try:
-                    private_key = get_private_key(self.my_key_value.get(), partial(self.mock_callback, password))
-                except Exception:
-                    print("Incorrect private key passphrase")
-                if private_key:
+                    while len(password) == 0:
+                        password = askstring("Private Key Passphrase", "Passphrase can't be empty", show="*")
+                        # This if-clause is for preventing error messages
+                        if password is None:
+                            return
+                    try:
+                        private_key = get_private_key(self.my_key_value.get(), partial(self.mock_callback, password))
+                    except Exception:
+                        print("Incorrect private key passphrase")
+                else:
+                    # Use temporary private key
+                    private_key = bytes(PrivateKey.generate())
+                    print("No private key supplied, temporary private key will be generated")
+                # Perform encryption
+                if private_key is not None:
                     their_key = get_public_key(self.their_key_value.get())
                     print("Encrypting...")
                     original_file = open(self.file_value.get(), "rb")
@@ -247,12 +255,17 @@ def main() -> None:
     """Run Program."""
     root = tk.Tk()
     GUI(root)
-    print("To begin file encryption or decryption:\n")
-    print("1. Generate keys if you haven't already")
-    print("2. Load your private key")
-    print("3. Load your recipient's or sender's public key")
-    print("4. Select file for encryption or decryption")
-    print("5. Click [Encrypt File] or [Decrypt File]\n")
+    print("To begin file encryption:\n")
+    print("1. Generate keys (optional)")
+    print("2. Load your private key (optional)")
+    print("3. Load your recipient's public key")
+    print("4. Select file for encryption")
+    print("5. Click [Encrypt File]\n")
+    print("To begin file decryption:\n")
+    print("1. Load your private key")
+    print("2. Load your sender's public key (optional)")
+    print("3. Select file for decryption")
+    print("4. Click [Decrypt File]\n")
     root.mainloop()
 
 
