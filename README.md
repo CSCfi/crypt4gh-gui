@@ -19,13 +19,7 @@ For more advanced features, please refer to the [CLI](https://github.com/EGA-arc
 
 ## Installation
 
-The GUI requires:
-- Python 3.6 or newer version
-- Tkinter
-
-The GUI has only one dependency:
-- [crypt4gh](https://github.com/EGA-archive/crypt4gh)
-
+The GUI requires a python installation with [tkinter](https://docs.python.org/3/library/tkinter.html)
 ```
 git clone https://github.com/CSCfi/crypt4gh-gui
 pip install -r requirements.txt
