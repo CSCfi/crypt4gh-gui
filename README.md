@@ -8,9 +8,11 @@ This is a simple Graphical User Interface wrapped around the [crypt4gh python mo
 Click on the picture above to view the demo video
 
 Current features:
-- Generation of key pair
-- Encryption of file
+- Generation of key pair (optional)
+- Encryption of file with existing private key (optional)
+- Encryption of file with generated temporary private key
 - Decryption of file
+- Decryption of file with sender public key validation (optional)
 - Sender signature validation (optional)
 
 For more advanced features, please refer to the [CLI](https://github.com/EGA-archive/crypt4gh#usage) instead.
@@ -18,7 +20,7 @@ For more advanced features, please refer to the [CLI](https://github.com/EGA-arc
 ## Installation
 
 The GUI requires:
-- Python 3.6+
+- Python 3.6 or newer version
 - Tkinter
 
 The GUI has only one dependency:

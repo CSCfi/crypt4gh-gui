@@ -1,1 +1,2 @@
 crypt4gh==1.5
+pynacl==1.4.0

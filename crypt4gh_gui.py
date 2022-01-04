@@ -12,6 +12,7 @@ from functools import partial
 from platform import system
 from typing import Any
 
+from nacl.public import PrivateKey
 from crypt4gh.keys import c4gh, get_private_key, get_public_key
 from crypt4gh.lib import encrypt, decrypt
 
@@ -156,24 +157,31 @@ class GUI:
             except PermissionError:
                 print(f"A previous generated key exists under the name {getpass.getuser()}_crypt4gh.key already exists remove it and try again.")
         elif action == "encrypt":
-            # Check that all fields are filled before asking for password
-            if self.my_key_value.get() and self.their_key_value.get() and self.file_value.get():
-                # All fields are filled, ask for passphrase for private key encryption
-                password = askstring("Private Key Passphrase", "Private Key Passphrase", show="*")
-                # This if-clause is for preventing error messages
-                if password is None:
-                    return
-                while len(password) == 0:
-                    password = askstring("Private Key Passphrase", "Passphrase can't be empty", show="*")
+            # Check that recipient key and file are set before continuing
+            if self.their_key_value.get() and self.file_value.get():
+                private_key = None
+                # If private key is set, get a password for it
+                if self.my_key_value.get():
+                    # All fields are filled, ask for passphrase for private key encryption
+                    password = askstring("Private Key Passphrase", "Private Key Passphrase", show="*")
                     # This if-clause is for preventing error messages
                     if password is None:
                         return
-                private_key = None
-                try:
-                    private_key = get_private_key(self.my_key_value.get(), partial(self.mock_callback, password))
-                except Exception:
-                    print("Incorrect private key passphrase")
-                if private_key:
+                    while len(password) == 0:
+                        password = askstring("Private Key Passphrase", "Passphrase can't be empty", show="*")
+                        # This if-clause is for preventing error messages
+                        if password is None:
+                            return
+                    try:
+                        private_key = get_private_key(self.my_key_value.get(), partial(self.mock_callback, password))
+                    except Exception:
+                        print("Incorrect private key passphrase")
+                else:
+                    # Use temporary private key
+                    private_key = bytes(PrivateKey.generate())
+                    print("No private key supplied, temporary private key will be generated")
+                # Perform encryption
+                if private_key is not None:
                     their_key = get_public_key(self.their_key_value.get())
                     print("Encrypting...")
                     original_file = open(self.file_value.get(), "rb")
