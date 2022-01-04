@@ -72,7 +72,7 @@ class GUI:
 
         self.activity_label = tk.Label(window, text="Activity Log")
         self.activity_label.grid(column=0, row=6, sticky=tk.W)
-        self.activity_field = ScrolledText(window, height=10)
+        self.activity_field = ScrolledText(window, height=16)
         self.activity_field.grid(column=0, row=7, columnspan=3, sticky=tk.W)
         self.activity_field.config(state="disabled")
 
@@ -255,12 +255,17 @@ def main() -> None:
     """Run Program."""
     root = tk.Tk()
     GUI(root)
-    print("To begin file encryption or decryption:\n")
-    print("1. Generate keys if you haven't already")
-    print("2. Load your private key")
-    print("3. Load your recipient's or sender's public key")
-    print("4. Select file for encryption or decryption")
-    print("5. Click [Encrypt File] or [Decrypt File]\n")
+    print("To begin file encryption:\n")
+    print("1. Generate keys (optional)")
+    print("2. Load your private key (optional)")
+    print("3. Load your recipient's public key")
+    print("4. Select file for encryption")
+    print("5. Click [Encrypt File]\n")
+    print("To begin file decryption:\n")
+    print("1. Load your private key")
+    print("2. Load your sender's public key (optional)")
+    print("3. Select file for decryption")
+    print("4. Click [Decrypt File]\n")
     root.mainloop()
 
 
