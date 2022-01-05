@@ -192,7 +192,7 @@ class GUI:
                     print("Encryption has finished")
                     print(f"Encrypted file: {self.file_value.get()}.c4gh")
             else:
-                print("All fields must be filled before file encryption can be started")
+                print("File and public key must be filled before file encryption can be started")
         elif action == "decrypt":
             print(self.file_value.get())
             if not self.file_value.get().endswith(".c4gh"):
