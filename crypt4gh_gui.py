@@ -10,6 +10,8 @@ from tkinter.filedialog import askopenfilename
 from tkinter.scrolledtext import ScrolledText
 from functools import partial
 from platform import system
+from typing import Optional, Union
+from io import BufferedWriter, BufferedReader
 
 from nacl.public import PrivateKey
 from crypt4gh.keys import c4gh, get_private_key, get_public_key
@@ -144,9 +146,10 @@ class GUI:
         else:
             print(f"Unknown action: {action}")
 
-    def password_prompt(self, action: str) -> None:
+    def password_prompt(self, action: Optional[str]) -> None:
         """Ask user for private key password."""
-        password1 = password2 = ""
+        password1: Optional[str] = ""
+        password2: Optional[str] = ""
         if action == "generate":
             # Passphrase for private key generation
             password1 = askstring("Private Key Passphrase", "Private Key Passphrase", show="*")
@@ -204,6 +207,7 @@ class GUI:
                 if private_key is not None:
                     their_key = get_public_key(self.their_key_value.get())
                     print("Encrypting...")
+                    encrypted_file: Union[BufferedWriter, BufferedReader]
                     original_file = open(self.file_value.get(), "rb")
                     encrypted_file = open(f"{self.file_value.get()}.c4gh", "wb")
                     encrypt([(0, private_key, their_key)], original_file, encrypted_file)
