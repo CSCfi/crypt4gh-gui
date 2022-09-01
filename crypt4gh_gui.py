@@ -10,7 +10,6 @@ from tkinter.filedialog import askopenfilename
 from tkinter.scrolledtext import ScrolledText
 from functools import partial
 from platform import system
-from typing import Any
 
 from nacl.public import PrivateKey
 from crypt4gh.keys import c4gh, get_private_key, get_public_key
@@ -35,7 +34,7 @@ else:
 class GUI:
     """Graphical User Interface."""
 
-    def __init__(self, window: Any) -> None:
+    def __init__(self, window: tk.Tk) -> None:
         """Initialise window."""
         self.window = window
         self.window.resizable(False, False)
@@ -52,7 +51,9 @@ class GUI:
         self.my_key_field.grid(column=0, row=1, sticky=tk.W)
         self.my_key_field.config(state="disabled")
         # Auto-load generated private key if such exists: username_crypt4gh.key (can be changed in UI)
-        default_private_key_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), f"{getpass.getuser()}_crypt4gh.key")
+        default_private_key_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), f"{getpass.getuser()}_crypt4gh.key"
+        )
         if os.path.isfile(default_private_key_path):
             self.my_key_value.set(default_private_key_path)
 
@@ -79,30 +80,49 @@ class GUI:
         # 2nd column BUTTONS
 
         self.generate_keys_button = tk.Button(
-            window, text="Generate Keys", width=OS_CONFIG["config_button_width"], command=partial(self.password_prompt, "generate")
+            window,
+            text="Generate Keys",
+            width=OS_CONFIG["config_button_width"],
+            command=partial(self.password_prompt, "generate"),
         )
         self.generate_keys_button.grid(column=1, row=0, sticky=tk.E, columnspan=2)
 
         self.load_my_key_button = tk.Button(
-            window, text="Load My Private Key", width=OS_CONFIG["config_button_width"], command=partial(self.open_file, "private")
+            window,
+            text="Load My Private Key",
+            width=OS_CONFIG["config_button_width"],
+            command=partial(self.open_file, "private"),
         )
         self.load_my_key_button.grid(column=1, row=1, sticky=tk.E, columnspan=2)
 
         self.load_their_key_button = tk.Button(
-            window, text="Load Their Public Key", width=OS_CONFIG["config_button_width"], command=partial(self.open_file, "public")
+            window,
+            text="Load Their Public Key",
+            width=OS_CONFIG["config_button_width"],
+            command=partial(self.open_file, "public"),
         )
         self.load_their_key_button.grid(column=1, row=2, sticky=tk.E, columnspan=2)
 
-        self.select_file_button = tk.Button(window, text="Select File", width=OS_CONFIG["config_button_width"], command=partial(self.open_file, "file"))
+        self.select_file_button = tk.Button(
+            window, text="Select File", width=OS_CONFIG["config_button_width"], command=partial(self.open_file, "file")
+        )
         self.select_file_button.grid(column=1, row=3, sticky=tk.E, columnspan=2)
 
         self.encrypt_button = tk.Button(
-            window, text="Encrypt File", width=OS_CONFIG["operation_button_width"], height=3, command=partial(self.password_prompt, "encrypt")
+            window,
+            text="Encrypt File",
+            width=OS_CONFIG["operation_button_width"],
+            height=3,
+            command=partial(self.password_prompt, "encrypt"),
         )
         self.encrypt_button.grid(column=1, row=4, sticky=tk.E, rowspan=3)
 
         self.decrypt_button = tk.Button(
-            window, text="Decrypt File", width=OS_CONFIG["operation_button_width"], height=3, command=partial(self.password_prompt, "decrypt")
+            window,
+            text="Decrypt File",
+            width=OS_CONFIG["operation_button_width"],
+            height=3,
+            command=partial(self.password_prompt, "decrypt"),
         )
         self.decrypt_button.grid(column=2, row=4, sticky=tk.E, rowspan=3)
 
@@ -150,12 +170,20 @@ class GUI:
                     return
             # Use crypt4gh module to generate private and public keys
             try:
-                c4gh.generate(f"{getpass.getuser()}_crypt4gh.key", f"{getpass.getuser()}_crypt4gh.pub", passphrase=str.encode(password1))
-                print("Key pair has been generated, your private key will be auto-loaded the next time you launch this tool")
+                c4gh.generate(
+                    f"{getpass.getuser()}_crypt4gh.key",
+                    f"{getpass.getuser()}_crypt4gh.pub",
+                    passphrase=str.encode(password1),
+                )
+                print(
+                    "Key pair has been generated, your private key will be auto-loaded the next time you launch this tool"
+                )
                 print(f"Private key: {getpass.getuser()}_crypt4gh.key")
                 print(f"Public key: {getpass.getuser()}_crypt4gh.pub")
             except PermissionError:
-                print(f"A previous generated key exists under the name {getpass.getuser()}_crypt4gh.key already exists remove it and try again.")
+                print(
+                    f"A previous generated key exists under the name {getpass.getuser()}_crypt4gh.key already exists remove it and try again."
+                )
         elif action == "encrypt":
             # Check that recipient key and file are set before continuing
             if self.their_key_value.get() and self.file_value.get():
@@ -227,7 +255,9 @@ class GUI:
                         decrypted_file = open(self.file_value.get()[:-5], "wb")
                         error = False
                         try:
-                            decrypt([(0, private_key, their_key)], encrypted_file, decrypted_file, sender_pubkey=their_key)
+                            decrypt(
+                                [(0, private_key, their_key)], encrypted_file, decrypted_file, sender_pubkey=their_key
+                            )
                         except ValueError:
                             error = True
                             print("Decryption failed")
