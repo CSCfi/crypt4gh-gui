@@ -51,9 +51,7 @@ class GUI:
         self.my_key_field.grid(column=0, row=1, sticky=tk.W)
         self.my_key_field.config(state="disabled")
         # Auto-load generated private key if such exists: username_crypt4gh.key (can be changed in UI)
-        default_private_key_path = os.path.join(
-            os.path.dirname(os.path.abspath(__file__)), f"{getpass.getuser()}_crypt4gh.key"
-        )
+        default_private_key_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), f"{getpass.getuser()}_crypt4gh.key")
         if os.path.isfile(default_private_key_path):
             self.my_key_value.set(default_private_key_path)
 
@@ -103,9 +101,7 @@ class GUI:
         )
         self.load_their_key_button.grid(column=1, row=2, sticky=tk.E, columnspan=2)
 
-        self.select_file_button = tk.Button(
-            window, text="Select File", width=OS_CONFIG["config_button_width"], command=partial(self.open_file, "file")
-        )
+        self.select_file_button = tk.Button(window, text="Select File", width=OS_CONFIG["config_button_width"], command=partial(self.open_file, "file"))
         self.select_file_button.grid(column=1, row=3, sticky=tk.E, columnspan=2)
 
         self.encrypt_button = tk.Button(
@@ -175,15 +171,11 @@ class GUI:
                     f"{getpass.getuser()}_crypt4gh.pub",
                     passphrase=str.encode(password1),
                 )
-                print(
-                    "Key pair has been generated, your private key will be auto-loaded the next time you launch this tool"
-                )
+                print("Key pair has been generated, your private key will be auto-loaded the next time you launch this tool")
                 print(f"Private key: {getpass.getuser()}_crypt4gh.key")
                 print(f"Public key: {getpass.getuser()}_crypt4gh.pub")
             except PermissionError:
-                print(
-                    f"A previous generated key exists under the name {getpass.getuser()}_crypt4gh.key already exists remove it and try again."
-                )
+                print(f"A previous generated key exists under the name {getpass.getuser()}_crypt4gh.key already exists remove it and try again.")
         elif action == "encrypt":
             # Check that recipient key and file are set before continuing
             if self.their_key_value.get() and self.file_value.get():
@@ -255,9 +247,7 @@ class GUI:
                         decrypted_file = open(self.file_value.get()[:-5], "wb")
                         error = False
                         try:
-                            decrypt(
-                                [(0, private_key, their_key)], encrypted_file, decrypted_file, sender_pubkey=their_key
-                            )
+                            decrypt([(0, private_key, their_key)], encrypted_file, decrypted_file, sender_pubkey=their_key)
                         except ValueError:
                             error = True
                             print("Decryption failed")
