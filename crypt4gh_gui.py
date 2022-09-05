@@ -10,7 +10,8 @@ from tkinter.filedialog import askopenfilename
 from tkinter.scrolledtext import ScrolledText
 from functools import partial
 from platform import system
-from typing import Any
+from typing import Optional, Union
+from io import BufferedWriter, BufferedReader
 
 from nacl.public import PrivateKey
 from crypt4gh.keys import c4gh, get_private_key, get_public_key
@@ -35,7 +36,7 @@ else:
 class GUI:
     """Graphical User Interface."""
 
-    def __init__(self, window: Any) -> None:
+    def __init__(self, window: tk.Tk) -> None:
         """Initialise window."""
         self.window = window
         self.window.resizable(False, False)
@@ -79,17 +80,26 @@ class GUI:
         # 2nd column BUTTONS
 
         self.generate_keys_button = tk.Button(
-            window, text="Generate Keys", width=OS_CONFIG["config_button_width"], command=partial(self.password_prompt, "generate")
+            window,
+            text="Generate Keys",
+            width=OS_CONFIG["config_button_width"],
+            command=partial(self.password_prompt, "generate"),
         )
         self.generate_keys_button.grid(column=1, row=0, sticky=tk.E, columnspan=2)
 
         self.load_my_key_button = tk.Button(
-            window, text="Load My Private Key", width=OS_CONFIG["config_button_width"], command=partial(self.open_file, "private")
+            window,
+            text="Load My Private Key",
+            width=OS_CONFIG["config_button_width"],
+            command=partial(self.open_file, "private"),
         )
         self.load_my_key_button.grid(column=1, row=1, sticky=tk.E, columnspan=2)
 
         self.load_their_key_button = tk.Button(
-            window, text="Load Their Public Key", width=OS_CONFIG["config_button_width"], command=partial(self.open_file, "public")
+            window,
+            text="Load Their Public Key",
+            width=OS_CONFIG["config_button_width"],
+            command=partial(self.open_file, "public"),
         )
         self.load_their_key_button.grid(column=1, row=2, sticky=tk.E, columnspan=2)
 
@@ -97,12 +107,20 @@ class GUI:
         self.select_file_button.grid(column=1, row=3, sticky=tk.E, columnspan=2)
 
         self.encrypt_button = tk.Button(
-            window, text="Encrypt File", width=OS_CONFIG["operation_button_width"], height=3, command=partial(self.password_prompt, "encrypt")
+            window,
+            text="Encrypt File",
+            width=OS_CONFIG["operation_button_width"],
+            height=3,
+            command=partial(self.password_prompt, "encrypt"),
         )
         self.encrypt_button.grid(column=1, row=4, sticky=tk.E, rowspan=3)
 
         self.decrypt_button = tk.Button(
-            window, text="Decrypt File", width=OS_CONFIG["operation_button_width"], height=3, command=partial(self.password_prompt, "decrypt")
+            window,
+            text="Decrypt File",
+            width=OS_CONFIG["operation_button_width"],
+            height=3,
+            command=partial(self.password_prompt, "decrypt"),
         )
         self.decrypt_button.grid(column=2, row=4, sticky=tk.E, rowspan=3)
 
@@ -128,9 +146,10 @@ class GUI:
         else:
             print(f"Unknown action: {action}")
 
-    def password_prompt(self, action: str) -> None:
+    def password_prompt(self, action: Optional[str]) -> None:
         """Ask user for private key password."""
-        password1 = password2 = ""
+        password1: Optional[str] = ""
+        password2: Optional[str] = ""
         if action == "generate":
             # Passphrase for private key generation
             password1 = askstring("Private Key Passphrase", "Private Key Passphrase", show="*")
@@ -150,7 +169,11 @@ class GUI:
                     return
             # Use crypt4gh module to generate private and public keys
             try:
-                c4gh.generate(f"{getpass.getuser()}_crypt4gh.key", f"{getpass.getuser()}_crypt4gh.pub", passphrase=str.encode(password1))
+                c4gh.generate(
+                    f"{getpass.getuser()}_crypt4gh.key",
+                    f"{getpass.getuser()}_crypt4gh.pub",
+                    passphrase=str.encode(password1),
+                )
                 print("Key pair has been generated, your private key will be auto-loaded the next time you launch this tool")
                 print(f"Private key: {getpass.getuser()}_crypt4gh.key")
                 print(f"Public key: {getpass.getuser()}_crypt4gh.pub")
@@ -184,6 +207,7 @@ class GUI:
                 if private_key is not None:
                     their_key = get_public_key(self.their_key_value.get())
                     print("Encrypting...")
+                    encrypted_file: Union[BufferedWriter, BufferedReader]
                     original_file = open(self.file_value.get(), "rb")
                     encrypted_file = open(f"{self.file_value.get()}.c4gh", "wb")
                     encrypt([(0, private_key, their_key)], original_file, encrypted_file)
