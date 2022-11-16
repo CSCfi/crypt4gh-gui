@@ -10,7 +10,7 @@ from tkinter.filedialog import askopenfilename
 from tkinter.scrolledtext import ScrolledText
 from functools import partial
 from platform import system
-from typing import Any
+from typing import Any, Optional
 
 from nacl.public import PrivateKey
 from crypt4gh.keys import c4gh, get_private_key, get_public_key
@@ -79,17 +79,26 @@ class GUI:
         # 2nd column BUTTONS
 
         self.generate_keys_button = tk.Button(
-            window, text="Generate Keys", width=OS_CONFIG["config_button_width"], command=partial(self.password_prompt, "generate")
+            window,
+            text="Generate Keys",
+            width=OS_CONFIG["config_button_width"],
+            command=partial(self.password_prompt, "generate"),
         )
         self.generate_keys_button.grid(column=1, row=0, sticky=tk.E, columnspan=2)
 
         self.load_my_key_button = tk.Button(
-            window, text="Load My Private Key", width=OS_CONFIG["config_button_width"], command=partial(self.open_file, "private")
+            window,
+            text="Load My Private Key",
+            width=OS_CONFIG["config_button_width"],
+            command=partial(self.open_file, "private"),
         )
         self.load_my_key_button.grid(column=1, row=1, sticky=tk.E, columnspan=2)
 
         self.load_their_key_button = tk.Button(
-            window, text="Load Their Public Key", width=OS_CONFIG["config_button_width"], command=partial(self.open_file, "public")
+            window,
+            text="Load Their Public Key",
+            width=OS_CONFIG["config_button_width"],
+            command=partial(self.open_file, "public"),
         )
         self.load_their_key_button.grid(column=1, row=2, sticky=tk.E, columnspan=2)
 
@@ -97,12 +106,20 @@ class GUI:
         self.select_file_button.grid(column=1, row=3, sticky=tk.E, columnspan=2)
 
         self.encrypt_button = tk.Button(
-            window, text="Encrypt File", width=OS_CONFIG["operation_button_width"], height=3, command=partial(self.password_prompt, "encrypt")
+            window,
+            text="Encrypt File",
+            width=OS_CONFIG["operation_button_width"],
+            height=3,
+            command=partial(self.password_prompt, "encrypt"),
         )
         self.encrypt_button.grid(column=1, row=4, sticky=tk.E, rowspan=3)
 
         self.decrypt_button = tk.Button(
-            window, text="Decrypt File", width=OS_CONFIG["operation_button_width"], height=3, command=partial(self.password_prompt, "decrypt")
+            window,
+            text="Decrypt File",
+            width=OS_CONFIG["operation_button_width"],
+            height=3,
+            command=partial(self.password_prompt, "decrypt"),
         )
         self.decrypt_button.grid(column=2, row=4, sticky=tk.E, rowspan=3)
 
@@ -130,7 +147,8 @@ class GUI:
 
     def password_prompt(self, action: str) -> None:
         """Ask user for private key password."""
-        password1 = password2 = ""
+        password1: Optional[str] = ""
+        password2: Optional[str] = ""
         if action == "generate":
             # Passphrase for private key generation
             password1 = askstring("Private Key Passphrase", "Private Key Passphrase", show="*")
@@ -150,7 +168,11 @@ class GUI:
                     return
             # Use crypt4gh module to generate private and public keys
             try:
-                c4gh.generate(f"{getpass.getuser()}_crypt4gh.key", f"{getpass.getuser()}_crypt4gh.pub", passphrase=str.encode(password1))
+                c4gh.generate(
+                    f"{getpass.getuser()}_crypt4gh.key",
+                    f"{getpass.getuser()}_crypt4gh.pub",
+                    passphrase=str.encode(password1),
+                )
                 print("Key pair has been generated, your private key will be auto-loaded the next time you launch this tool")
                 print(f"Private key: {getpass.getuser()}_crypt4gh.key")
                 print(f"Public key: {getpass.getuser()}_crypt4gh.pub")
@@ -185,10 +207,10 @@ class GUI:
                     their_key = get_public_key(self.their_key_value.get())
                     print("Encrypting...")
                     original_file = open(self.file_value.get(), "rb")
-                    encrypted_file = open(f"{self.file_value.get()}.c4gh", "wb")
-                    encrypt([(0, private_key, their_key)], original_file, encrypted_file)
+                    encrypted_file_wb = open(f"{self.file_value.get()}.c4gh", "wb")
+                    encrypt([(0, private_key, their_key)], original_file, encrypted_file_wb)
                     original_file.close()
-                    encrypted_file.close()
+                    encrypted_file_wb.close()
                     print("Encryption has finished")
                     print(f"Encrypted file: {self.file_value.get()}.c4gh")
             else:
@@ -223,11 +245,16 @@ class GUI:
                         else:
                             print("Sender public key has not been set, authenticity will not be verified")
                         print("Decrypting...")
-                        encrypted_file = open(self.file_value.get(), "rb")
+                        encrypted_file_rb = open(self.file_value.get(), "rb")
                         decrypted_file = open(self.file_value.get()[:-5], "wb")
                         error = False
                         try:
-                            decrypt([(0, private_key, their_key)], encrypted_file, decrypted_file, sender_pubkey=their_key)
+                            decrypt(
+                                [(0, private_key, their_key)],
+                                encrypted_file_rb,
+                                decrypted_file,
+                                sender_pubkey=their_key,
+                            )
                         except ValueError:
                             error = True
                             print("Decryption failed")
@@ -235,7 +262,7 @@ class GUI:
                                 print("This public key is not the sender of this file")
                             else:
                                 print("This private key is not the intended recipient")
-                        encrypted_file.close()
+                        encrypted_file_rb.close()
                         decrypted_file.close()
                         if not error:
                             print("Decryption has finished")
