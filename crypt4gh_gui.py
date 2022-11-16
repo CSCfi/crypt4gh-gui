@@ -209,10 +209,10 @@ class GUI:
                     print("Encrypting...")
                     encrypted_file: Union[BufferedWriter, BufferedReader]
                     original_file = open(self.file_value.get(), "rb")
-                    encrypted_file = open(f"{self.file_value.get()}.c4gh", "wb")
-                    encrypt([(0, private_key, their_key)], original_file, encrypted_file)
+                    encrypted_file_wb = open(f"{self.file_value.get()}.c4gh", "wb")
+                    encrypt([(0, private_key, their_key)], original_file, encrypted_file_wb)
                     original_file.close()
-                    encrypted_file.close()
+                    encrypted_file_wb.close()
                     print("Encryption has finished")
                     print(f"Encrypted file: {self.file_value.get()}.c4gh")
             else:
@@ -247,11 +247,16 @@ class GUI:
                         else:
                             print("Sender public key has not been set, authenticity will not be verified")
                         print("Decrypting...")
-                        encrypted_file = open(self.file_value.get(), "rb")
+                        encrypted_file_rb = open(self.file_value.get(), "rb")
                         decrypted_file = open(self.file_value.get()[:-5], "wb")
                         error = False
                         try:
-                            decrypt([(0, private_key, their_key)], encrypted_file, decrypted_file, sender_pubkey=their_key)
+                            decrypt(
+                                [(0, private_key, their_key)],
+                                encrypted_file_rb,
+                                decrypted_file,
+                                sender_pubkey=their_key,
+                            )
                         except ValueError:
                             error = True
                             print("Decryption failed")
@@ -259,7 +264,7 @@ class GUI:
                                 print("This public key is not the sender of this file")
                             else:
                                 print("This private key is not the intended recipient")
-                        encrypted_file.close()
+                        encrypted_file_rb.close()
                         decrypted_file.close()
                         if not error:
                             print("Decryption has finished")
