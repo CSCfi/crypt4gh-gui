@@ -53,7 +53,10 @@ class GUI:
         self.my_key_field.grid(column=0, row=1, sticky=tk.W)
         self.my_key_field.config(state="disabled")
         # Auto-load generated private key if such exists: username_crypt4gh.key (can be changed in UI)
-        default_private_key_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), f"{getpass.getuser()}_crypt4gh.key")
+        default_private_key_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            f"{getpass.getuser()}_crypt4gh.key",
+        )
         if os.path.isfile(default_private_key_path):
             self.my_key_value.set(default_private_key_path)
 
@@ -103,7 +106,12 @@ class GUI:
         )
         self.load_their_key_button.grid(column=1, row=2, sticky=tk.E, columnspan=2)
 
-        self.select_file_button = tk.Button(window, text="Select File", width=OS_CONFIG["config_button_width"], command=partial(self.open_file, "file"))
+        self.select_file_button = tk.Button(
+            window,
+            text="Select File",
+            width=OS_CONFIG["config_button_width"],
+            command=partial(self.open_file, "file"),
+        )
         self.select_file_button.grid(column=1, row=3, sticky=tk.E, columnspan=2)
 
         self.encrypt_button = tk.Button(
@@ -156,7 +164,11 @@ class GUI:
             # This if-clause is for preventing error messages
             if password1 is None:
                 return
-            password2 = askstring("Private Key Passphrase", "Re-type Private Key Passphrase to Confirm", show="*")
+            password2 = askstring(
+                "Private Key Passphrase",
+                "Re-type Private Key Passphrase to Confirm",
+                show="*",
+            )
             if password2 is None:
                 return
             if password1 != password2:
@@ -191,7 +203,11 @@ class GUI:
                     if password is None:
                         return
                     while len(password) == 0:
-                        password = askstring("Private Key Passphrase", "Passphrase can't be empty", show="*")
+                        password = askstring(
+                            "Private Key Passphrase",
+                            "Passphrase can't be empty",
+                            show="*",
+                        )
                         # This if-clause is for preventing error messages
                         if password is None:
                             return
@@ -207,7 +223,7 @@ class GUI:
                 if private_key is not None:
                     their_key = get_public_key(self.their_key_value.get())
                     print("Encrypting...")
-                    encrypted_file: Union[BufferedWriter, BufferedReader]
+                    encrypted_file_wb: Union[BufferedWriter, BufferedReader]
                     original_file = open(self.file_value.get(), "rb")
                     encrypted_file_wb = open(f"{self.file_value.get()}.c4gh", "wb")
                     encrypt([(0, private_key, their_key)], original_file, encrypted_file_wb)
@@ -230,7 +246,11 @@ class GUI:
                     if password is None:
                         return
                     while len(password) == 0:
-                        password = askstring("Private Key Passphrase", "Passphrase can't be empty", show="*")
+                        password = askstring(
+                            "Private Key Passphrase",
+                            "Passphrase can't be empty",
+                            show="*",
+                        )
                         # This if-clause is for preventing error messages
                         if password is None:
                             return
