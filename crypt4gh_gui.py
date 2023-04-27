@@ -12,6 +12,7 @@ from functools import partial
 from platform import system
 from typing import Optional, Union
 from io import BufferedWriter, BufferedReader
+from unittest.mock import MagicMock
 
 from nacl.public import PrivateKey
 from crypt4gh.keys import c4gh, get_private_key, get_public_key
@@ -42,6 +43,7 @@ class GUI:
         self.window.resizable(False, False)
         self.window.title("Crypt4GH")
         # print to activity log instead of console
+        sys.stdout = MagicMock()
         sys.stdout.write = self.print_redirect  # type: ignore
 
         # 1st column FIELDS AND LABELS
