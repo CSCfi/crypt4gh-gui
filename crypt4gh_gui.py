@@ -12,7 +12,6 @@ from functools import partial
 from platform import system
 from typing import Optional, Union
 from io import BufferedWriter, BufferedReader
-from unittest.mock import MagicMock
 
 from nacl.public import PrivateKey
 from crypt4gh.keys import c4gh, get_private_key, get_public_key
@@ -42,8 +41,12 @@ class GUI:
         self.window = window
         self.window.resizable(False, False)
         self.window.title("Crypt4GH")
+        # This prevents pyinstaller --noconsole from referencing a nonexistent sys.stdout.write
+        if system() == "Windows":
+            self.old_stdout = sys.stdout
+            self.tmp_stdout = open(os.devnull, "w")
+            sys.stdout = self.tmp_stdout
         # print to activity log instead of console
-        sys.stdout = MagicMock()
         sys.stdout.write = self.print_redirect  # type: ignore
 
         # 1st column FIELDS AND LABELS
@@ -301,11 +304,17 @@ class GUI:
         """Mock callback to return password."""
         return password
 
+    def cleanup(self) -> None:
+        """Restore the sys.stdout on Windows."""
+        if system() == "Windows":
+            sys.stdout = self.old_stdout
+            self.tmp_stdout.close()
+
 
 def main() -> None:
     """Run Program."""
     root = tk.Tk()
-    GUI(root)
+    gui = GUI(root)
     print("To begin file encryption:\n")
     print("1. Generate keys (optional)")
     print("2. Load your private key (optional)")
@@ -318,6 +327,7 @@ def main() -> None:
     print("3. Select file for decryption")
     print("4. Click [Decrypt File]\n")
     root.mainloop()
+    gui.cleanup()
 
 
 if __name__ == "__main__":
