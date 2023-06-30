@@ -81,17 +81,17 @@ jobs:
           docker pull cscfi/pyinstaller
           docker run --rm -v "${PWD}:/builder" cscfi/pyinstaller --noconsole --onefile crypt4gh_gui.py --name ${{ matrix.asset_name }}
           sudo chown -R $USER:$GROUP dist/
-      - name: Build artifact macOS
+      - name: Build GUI artifact macOS
         if: matrix.os == 'macOS-latest'
         run: |
           pyinstaller --noconsole --onefile crypt4gh_gui.py --name ${{ matrix.asset_name }}
-      - name: Build artifact windows
+      - name: Build GUI artifact windows
         if: matrix.os == 'windows-latest'
         shell: bash
         run: |
           TAG=${{ github.ref_name }}
           VERSION=${TAG#v}
-          create-version-file windows_metadata.yml --outfile file_version_info.txt --version $VERSION
+          create-version-file versionfile.yml --outfile file_version_info.txt --version $VERSION
           pyinstaller --noconsole --onefile crypt4gh_gui.py --name ${{ matrix.asset_name }} --version-file file_version_info.txt
       - name: Create temporary certificate file
         if: matrix.os == 'windows-latest'
