@@ -5,6 +5,9 @@ on:
     tags:
       - "v*"
 
+permissions:
+  contents: write
+
 jobs:
   create_release:
     name: Create release
@@ -70,6 +73,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pyinstaller
+          pip install pyinstaller-versionfile
       - name: Build GUI artifact Linux
         if: matrix.os == 'ubuntu-latest'
         run: |
@@ -77,10 +81,38 @@ jobs:
           docker pull cscfi/pyinstaller
           docker run --rm -v "${PWD}:/builder" cscfi/pyinstaller --noconsole --onefile crypt4gh_gui.py --name ${{ matrix.asset_name }}
           sudo chown -R $USER:$GROUP dist/
-      - name: Build artifact
-        if: matrix.os != 'ubuntu-latest'
+      - name: Build artifact macOS
+        if: matrix.os == 'macOS-latest'
         run: |
           pyinstaller --noconsole --onefile crypt4gh_gui.py --name ${{ matrix.asset_name }}
+      - name: Parse version information on Windows
+        if: matrix.os == 'windows-latest'
+        shell: bash
+        run: |
+          TAG=${{ github.ref_name }}
+          VERSION=${TAG#v}
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+      - name: Build artifact windows
+        if: matrix.os == 'windows-latest'
+        run: |
+          create-version-file windows_metadata.yml --outfile file_version_info.txt --version ${{ env.VERSION }}
+          pyinstaller --noconsole --onefile crypt4gh_gui.py --name ${{ matrix.asset_name }} --version-file file_version_info.txt
+      - name: Create temporary certificate file
+        if: matrix.os == 'windows-latest'
+        run: |
+          cd ${{ github.workspace }}
+          echo "${{ secrets.CERTIFICATE_BASE64 }}" >> certificate.b64
+          certutil -decode certificate.b64 certificate.crt
+          del certificate.b64
+      - name: Sign windows executable
+        if: matrix.os == 'windows-latest'
+        shell: cmd
+        env:
+          PASSWORD_ENV: ${{ secrets.CERTIFICATE_PASSWORD }}
+        run: |
+          cd ${{ github.workspace }}
+          "C:\Program Files (x86)\Windows Kits\10\bin\10.0.22621.0\x64\signtool.exe" sign /f .\certificate.crt /p %PASSWORD_ENV% /tr "http://timestamp.digicert.com" /td sha256 /fd sha256 .\dist\${{ matrix.artifact_name }}
+          del certificate.crt
       - name: Build Asset
         run: |
           cd ./dist
