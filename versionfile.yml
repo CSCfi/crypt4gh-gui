@@ -1,0 +1,9 @@
+CompanyName: CSC-Tieteen tietotekniikan keskus Oy
+FileDescription: Crypt4gh graphical user interface
+InternalName: crypt4gh_gui
+LegalCopyright: © CSC-Tieteen tietotekniikan keskus Oy
+OriginalFilename: crypt4gh_gui.exe
+ProductName: crypt4gh_gui
+Translation:
+  - langID: 1033
+    charsetID: 1200
