@@ -30,6 +30,3 @@ release-job:
   extends: .automated-release
   release:
     description: 'Crypt4gh GUI'
-
-
-
