@@ -18,6 +18,8 @@ test:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
 
   image: $BUILD_IMAGE
+  before_script:
+    - pip install tox
   script:
     - tox -e black
     - tox -e flake8
