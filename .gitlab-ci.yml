@@ -10,7 +10,7 @@ include:
     ref: main
     file: 'releases.yml'
 
-backend-test:
+test:
   stage: test
   tags:
     - docker-exec
@@ -18,9 +18,6 @@ backend-test:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
 
   image: $BUILD_IMAGE
-  before_script:
-    - pnpm --prefix swift_browser_ui_frontend install --prod
-    - pip install .[test]
   script:
     - tox -e black
     - tox -e flake8
