@@ -1,0 +1,32 @@
+stages:
+  - test
+  - release
+
+variables:
+  BUILD_IMAGE: $ARTIFACTORY_SERVER/sds/sdd-common-ci
+
+include:
+  - project: 'sds-dev/releases'
+    ref: main
+    file: 'releases.yml'
+
+test:
+  stage: test
+  tags:
+    - docker-exec
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+
+  image: $BUILD_IMAGE
+  before_script:
+    - pip install tox
+  script:
+    - tox -e black
+    - tox -e flake8
+    - tox -e mypy
+
+
+release-job:
+  extends: .automated-release
+  release:
+    description: 'Crypt4gh GUI'
