@@ -90,7 +90,7 @@ jobs:
         shell: bash
         run: |
           TAG=${{ github.ref_name }}
-          VERSION=${TAG#v}
+          VERSION=${TAG/.0*./.${TAG:6:1}.} # remove leading zero for windows version
           create-version-file versionfile.yml --outfile file_version_info.txt --version $VERSION
           pyinstaller --noconsole --onefile crypt4gh_gui.py --name ${{ matrix.asset_name }} --version-file file_version_info.txt
       - name: Create temporary certificate file
