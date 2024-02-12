@@ -20,7 +20,7 @@ For more advanced features, please refer to the [CLI](https://github.com/EGA-arc
 ## Installation
 
 The GUI requires a python installation with [tkinter](https://docs.python.org/3/library/tkinter.html)
-```
+```bash
 git clone https://github.com/CSCfi/crypt4gh-gui
 pip install -r requirements.txt
 
@@ -34,7 +34,7 @@ Standalone executable build requires:
 
 The GUI can be built into a standalone executable and distributed to machines that don't have python installed. After running the `pyinstaller` command, the standalone executable file can be found in the `dist/` directory.
 
-```
+```bash
 pip install pyinstaller
 
 pyinstaller --onefile crypt4gh_gui.py
@@ -43,12 +43,12 @@ pyinstaller --onefile crypt4gh_gui.py
 This has been tested on Linux and Windows.
 
 To run the executable on Linux:
-```
+```bash
 ./crypt4gh_gui
 ```
 
 To run the executable on Windows:
 - Double click on `crypt4gh_gui.exe` or run the following in `cmd`:
-```
+```bash
 crypt4gh_gui.exe
 ```
