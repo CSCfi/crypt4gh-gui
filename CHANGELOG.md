@@ -153,6 +153,7 @@ Always place latest update on top.
 
 ### Update
 - update readme
+
 [Unreleased]: https://gitlab.ci.csc.fi:10022/sds-dev/crypt4gh-gui/compare/2024.02.2...HEAD
 [2024.02.2]: https://gitlab.ci.csc.fi:10022/sds-dev/crypt4gh-gui/compare/2024.02.1...2024.02.2
 [2024.02.1]: https://gitlab.ci.csc.fi:10022/sds-dev/crypt4gh-gui/compare/2024.02.0...2024.02.1
