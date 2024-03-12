@@ -29,4 +29,4 @@ test:
 release-job:
   extends: .automated-release
   release:
-    description: 'Crypt4gh GUI'
+    description: $(cat release_changes.md)
