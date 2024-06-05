@@ -46,7 +46,7 @@ jobs:
             artifact_name: crypt4gh-gui
             os_suffix: macos-amd64
             asset_name: crypt4gh-gui
-        python-version: ["3.10"]
+        python-version: ["3.11"]
 
     runs-on: ${{ matrix.os }}
 

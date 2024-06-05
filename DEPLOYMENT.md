@@ -11,6 +11,6 @@ Select the release from https://github.com/CSCfi/crypt4gh-gui/releases
 ## Installation
 
 1. Download ZIP archive from selected release. Archives are named as `crypt4gh-gui-<python-version>-<operating-system>-<architecture>.zip`.
-Where `operating-system` is one of `linux`, `windows` or `macos` and `architecture` is fixed to `amd64`. For example for linux: `crypt4gh-gui-python3.10-linux-amd64.zip`
+Where `operating-system` is one of `linux`, `windows` or `macos` and `architecture` is fixed to `amd64`. For example for linux: `crypt4gh-gui-python3.11-linux-amd64.zip`
 
 2. Unzip archive and the binary/executable should be available for use.
