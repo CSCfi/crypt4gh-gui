@@ -6,6 +6,12 @@ Always place latest update on top.
 
 ## [Unreleased]
 
+## [2024.06.0] - 2024-06-05
+
+### Changed
+
+- upgraded python to 3.11
+
 ## [2024.02.2] - 2024-02-06
 
 ### Removed
@@ -200,3 +206,7 @@ Always place latest update on top.
 [sds-v1.0.0]: https://gitlab.ci.csc.fi/sds-dev/crypt4gh-gui/compare/feature/icon...sds-v1.0.0
 [feature/icon]: https://gitlab.ci.csc.fi/sds-dev/crypt4gh-gui/compare/master...feature/icon
 [master]: https://gitlab.ci.csc.fi/sds-dev/crypt4gh-gui/compare/1.0.0...master
+
+
+[unreleased]: https://gitlab.ci.csc.fi/sds-dev/crypt4gh-gui/compare/2024.06.0...HEAD
+[2024.06.0]: https://gitlab.ci.csc.fi/sds-dev/crypt4gh-gui/-/releases/2024.06.0
