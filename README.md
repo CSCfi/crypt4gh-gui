@@ -52,3 +52,11 @@ To run the executable on Windows:
 ```bash
 crypt4gh_gui.exe
 ```
+
+### Ready-to-use Releases
+You can download a pre-built executable from the [releases page](https://github.com/CSCfi/crypt4gh-gui/releases).
+
+1. Download a zip archive for your current operating system
+2. Extract the archive to get the executable
+
+Note that the Linux and Windows builds are created with `amd64` architecture, and the MacOS build is created with `arm64` architecture. For other architectures you must build the executable yourself with the instructions above.
