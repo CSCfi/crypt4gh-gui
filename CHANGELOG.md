@@ -6,6 +6,12 @@ Always place latest update on top.
 
 ## [Unreleased]
 
+## [2024.7.0] - 2024-07-16
+
+### Changed
+
+- macos architecture package name to arm64 because it is no longer amd64 in the latest image
+
 ## [2024.06.0] - 2024-06-05
 
 ### Changed
@@ -188,7 +194,8 @@ Always place latest update on top.
 - rename window title
 - update readme
 
-[Unreleased]: https://gitlab.ci.csc.fi/sds-dev/crypt4gh-gui/compare/2024.02.2...HEAD
+[unreleased]: https://gitlab.ci.csc.fi/sds-dev/crypt4gh-gui/compare/2024.7.0...HEAD
+[2024.7.0]: https://gitlab.ci.csc.fi/sds-dev/crypt4gh-gui/compare/2024.02.2...2024.7.0
 [2024.02.2]: https://gitlab.ci.csc.fi/sds-dev/crypt4gh-gui/compare/2024.02.1...2024.02.2
 [2024.02.1]: https://gitlab.ci.csc.fi/sds-dev/crypt4gh-gui/compare/2024.02.0...2024.02.1
 [2024.02.0]: https://gitlab.ci.csc.fi/sds-dev/crypt4gh-gui/compare/v1.4.0...2024.02.0
@@ -208,5 +215,6 @@ Always place latest update on top.
 [master]: https://gitlab.ci.csc.fi/sds-dev/crypt4gh-gui/compare/1.0.0...master
 
 
-[unreleased]: https://gitlab.ci.csc.fi/sds-dev/crypt4gh-gui/compare/2024.06.0...HEAD
+[unreleased]: https://gitlab.ci.csc.fi/sds-dev/crypt4gh-gui/compare/2024.7.0...HEAD
+[2024.7.0]: https://gitlab.ci.csc.fi/sds-dev/crypt4gh-gui/compare/2024.02.2...2024.7.0
 [2024.06.0]: https://gitlab.ci.csc.fi/sds-dev/crypt4gh-gui/-/releases/2024.06.0
