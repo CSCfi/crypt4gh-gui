@@ -1,2 +1,2 @@
-crypt4gh==1.7
+crypt4gh==1.8.6
 pynacl==1.6.2
